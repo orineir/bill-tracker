@@ -28,7 +28,7 @@
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-    html { font-size: 16px; }
+    html { font-size: 16px; overscroll-behavior-y: none; }
     body {
       font-family: var(--font);
       color: var(--ink);
@@ -36,6 +36,8 @@
       line-height: 1.6;
       min-height: 100vh;
       padding-bottom: 80px;
+      overscroll-behavior-y: none;
+      touch-action: pan-y;
     }
 
     /* ===== 顶部导航 ===== */
@@ -1535,11 +1537,11 @@
     <!-- 首页 -->
     <section class="page-section active" id="pageHome">
       <div class="stats-grid">
-        <div class="stat-card income">
+        <div class="stat-card income" id="cardIncome" style="cursor:pointer;">
           <div class="stat-label">本月收入</div>
           <div class="stat-value income" id="totalIncome">¥0.00</div>
         </div>
-        <div class="stat-card expense">
+        <div class="stat-card expense" id="cardExpense" style="cursor:pointer;">
           <div class="stat-label">本月支出</div>
           <div class="stat-value expense" id="totalExpense">¥0.00</div>
         </div>
@@ -1882,6 +1884,20 @@
   <div class="toast" id="toast"></div>
 
   <script>
+    // 阻止下拉刷新
+    let startY = 0;
+    document.addEventListener('touchstart', function(e) {
+      startY = e.touches[0].pageY;
+    }, { passive: true });
+    document.addEventListener('touchmove', function(e) {
+      const y = e.touches[0].pageY;
+      const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+      // 如果页面在顶部且向下滑动，阻止默认行为
+      if (scrollTop <= 0 && y > startY) {
+        e.preventDefault();
+      }
+    }, { passive: false });
+
     // ===================== 数据 =====================
     const defaultCategories = [
       { id: 'food', name: '餐饮', icon: '🍜', type: 'expense' },
@@ -2474,14 +2490,20 @@
     });
     document.getElementById('btnPrevDay').addEventListener('click', () => {
       homeDate.setDate(homeDate.getDate() - 1);
+      calYear = homeDate.getFullYear();
+      calMonth = homeDate.getMonth();
       renderRecords();
     });
     document.getElementById('btnNextDay').addEventListener('click', () => {
       homeDate.setDate(homeDate.getDate() + 1);
+      calYear = homeDate.getFullYear();
+      calMonth = homeDate.getMonth();
       renderRecords();
     });
     document.getElementById('btnToday').addEventListener('click', () => {
       homeDate = new Date();
+      calYear = homeDate.getFullYear();
+      calMonth = homeDate.getMonth();
       renderRecords();
     });
 
@@ -2553,6 +2575,28 @@
         document.getElementById('page' + page.charAt(0).toUpperCase() + page.slice(1)).classList.add('active');
         if (page === 'stats') renderCharts();
       });
+    });
+
+    // 首页统计卡片点击跳转
+    document.getElementById('cardIncome').addEventListener('click', () => {
+      statsType = 'income';
+      document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+      document.querySelector('.nav-item[data-page="stats"]').classList.add('active');
+      document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
+      document.getElementById('pageStats').classList.add('active');
+      document.querySelectorAll('.stats-type-btn').forEach(b => b.classList.remove('active'));
+      document.querySelector('.stats-type-btn[data-stats-type="income"]').classList.add('active');
+      renderCharts();
+    });
+    document.getElementById('cardExpense').addEventListener('click', () => {
+      statsType = 'expense';
+      document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+      document.querySelector('.nav-item[data-page="stats"]').classList.add('active');
+      document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
+      document.getElementById('pageStats').classList.add('active');
+      document.querySelectorAll('.stats-type-btn').forEach(b => b.classList.remove('active'));
+      document.querySelector('.stats-type-btn[data-stats-type="expense"]').classList.add('active');
+      renderCharts();
     });
 
     // ===================== 统计页事件 =====================
@@ -2855,7 +2899,56 @@
         </div>
       `;
 
+      // 导出按钮
+      html += `
+        <div style="margin-top:16px;padding-top:16px;border-top:1.5px solid var(--rule);">
+          <button type="button" class="submit-btn" id="btnExportSummaryExcel" style="background:var(--accent2);font-size:13px;padding:12px;">
+            📥 导出 Excel
+          </button>
+        </div>
+      `;
+
       document.getElementById('summaryContent').innerHTML = html;
+
+      // 绑定导出事件
+      document.getElementById('btnExportSummaryExcel').addEventListener('click', () => {
+        exportSummaryExcel(house, monthPrefix, rentAmount, rentPaid, monthRecs, elecUsed, waterUsed, elecCost, waterCost, utilityTotal, grandTotal);
+      });
+    }
+
+    function exportSummaryExcel(house, monthPrefix, rentAmount, rentPaid, monthRecs, elecUsed, waterUsed, elecCost, waterCost, utilityTotal, grandTotal) {
+      let csv = '\uFEFF'; // BOM for Excel UTF-8
+      csv += house.name + ' 月总结 (' + monthPrefix + ')\n\n';
+      csv += '项目,金额,备注\n';
+      csv += '月租金,' + rentAmount.toFixed(2) + ' 元,' + (rentPaid ? '已收租' : '待收租') + '\n';
+      if (monthRecs.length >= 2) {
+        csv += '用电量,' + elecUsed.toFixed(1) + ' 度,\n';
+        csv += '电费,' + elecCost.toFixed(2) + ' 元,\n';
+        csv += '用水量,' + waterUsed.toFixed(1) + ' m³,\n';
+        csv += '水费,' + waterCost.toFixed(2) + ' 元,\n';
+        csv += '水电合计,' + utilityTotal.toFixed(2) + ' 元,\n';
+      }
+      csv += '\n应收合计,' + grandTotal.toFixed(2) + ' 元,\n';
+
+      // 水电读数明细
+      if (monthRecs.length > 0) {
+        csv += '\n水电读数记录\n';
+        csv += '日期,电表读数(度),水表读数(m³)\n';
+        monthRecs.forEach(r => {
+          csv += r.date + ',' + Number(r.elec).toFixed(1) + ',' + Number(r.water).toFixed(1) + '\n';
+        });
+      }
+
+      const blob = new Blob([csv], { type: 'application/vnd.ms-excel;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = house.name + '_月总结_' + monthPrefix + '.xls';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('Excel 已导出');
     }
 
     document.getElementById('summaryCloseBtn').addEventListener('click', closeSummary);
