@@ -1316,10 +1316,11 @@
     .house-card-name span { font-size: 20px; }
     .house-card-actions {
       display: flex;
-      gap: 6px;
+      gap: 12px;
+      align-items: center;
     }
     .house-card-actions button {
-      width: 28px; height: 28px;
+      width: 32px; height: 32px;
       border-radius: 8px;
       border: 1.5px solid var(--rule);
       background: transparent;
@@ -1329,7 +1330,7 @@
       transition: all 0.2s ease;
     }
     .house-card-actions button:hover { border-color: var(--ink); color: var(--ink); }
-    .house-card-actions button svg { width: 14px; height: 14px; }
+    .house-card-actions button svg { width: 16px; height: 16px; }
     .house-card-actions .house-del-btn:hover { border-color: var(--danger); color: var(--danger); }
     .house-meter-grid {
       display: grid;
@@ -1812,6 +1813,25 @@
         </div>
         <div class="form-row">
           <button class="submit-btn" id="btnSubmitHouse">添加房子</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 删除确认模态框 -->
+  <div class="modal-overlay" id="deleteConfirmModal">
+    <div class="modal-content" style="max-width:360px;">
+      <div class="modal-header">
+        <div class="modal-title">确认删除</div>
+        <button class="modal-close" id="closeDeleteConfirmModal">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div style="padding:20px 0;">
+        <p id="deleteConfirmText" style="font-size:15px;color:var(--ink);line-height:1.6;margin-bottom:20px;"></p>
+        <div style="display:flex;gap:10px;">
+          <button class="submit-btn" id="btnCancelDelete" style="flex:1;background:var(--bg);color:var(--ink);border:1.5px solid var(--rule);">取消</button>
+          <button class="submit-btn" id="btnConfirmDelete" style="flex:1;background:var(--danger);">确定删除</button>
         </div>
       </div>
     </div>
@@ -2662,13 +2682,13 @@
             <div class="house-card-header">
               <div class="house-card-name"><span>🏠</span>${house.name}</div>
               <div class="house-card-actions">
-                <button class="house-summary-btn" data-idx="${idx}" title="月总结" style="width:auto;padding:0 10px;font-size:11px;font-weight:600;font-family:var(--font);border-radius:8px;border:1.5px solid var(--rule);background:transparent;cursor:pointer;color:var(--ink);transition:all 0.2s ease;">
+                <button type="button" class="house-summary-btn" data-idx="${idx}" title="月总结" style="width:auto;padding:0 10px;font-size:11px;font-weight:600;font-family:var(--font);border-radius:8px;border:1.5px solid var(--rule);background:transparent;cursor:pointer;color:var(--ink);transition:all 0.2s ease;">
                   📊 月总结
                 </button>
-                <button class="house-edit-btn" data-idx="${idx}" title="编辑">
+                <button type="button" class="house-edit-btn" data-idx="${idx}" title="编辑">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                 </button>
-                <button class="house-del-btn" data-idx="${idx}" title="删除">
+                <button type="button" class="house-del-btn" data-idx="${idx}" title="删除">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                 </button>
               </div>
@@ -2694,14 +2714,14 @@
                 <div class="meter-input-label">水表读数(m³)</div>
                 <input type="number" class="meter-input" id="water_${idx}" value="${curWater}" step="0.1" min="0" placeholder="0">
               </div>
-              <button class="meter-save-btn" data-idx="${idx}">记录</button>
+              <button type="button" class="meter-save-btn" data-idx="${idx}">记录</button>
             </div>
             <div style="margin-top:12px;padding-top:12px;border-top:1.5px solid var(--rule);">
               <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
                 <div style="font-size:13px;font-weight:700;color:var(--ink);">💰 租金管理</div>
                 <div style="display:flex;align-items:center;gap:8px;">
                   <span style="font-family:var(--font-mono);font-size:14px;font-weight:700;color:var(--accent2);">${formatMoney(rent)}/月</span>
-                  <button class="meter-save-btn" data-idx="${idx}" data-action="toggle-rent" style="background:${rentPaid ? 'var(--accent2)' : 'var(--ink)'};font-size:11px;">${rentPaid ? '已收租' : '标记收租'}</button>
+                  <button type="button" class="meter-save-btn" data-idx="${idx}" data-action="toggle-rent" style="background:${rentPaid ? 'var(--accent2)' : 'var(--ink)'};font-size:11px;">${rentPaid ? '已收租' : '标记收租'}</button>
                 </div>
               </div>
               ${utilityCost > 0 ? `<div style="font-size:12px;color:var(--muted);margin-bottom:8px;">本月水电费 ${formatMoney(utilityCost)}，应收合计 <strong style="color:var(--ink);">${formatMoney(rent + utilityCost)}</strong></div>` : ''}
@@ -2855,6 +2875,7 @@
 
     // ===================== 撤回功能 =====================
     let lastUndo = null; // { houseIdx, removedRecord, removedRentRecord, removedBillRecords }
+    let pendingDeleteIdx = -1; // 待删除的房子索引
 
     function undoLastAction() {
       if (!lastUndo) { showToast('没有可撤回的操作'); return; }
@@ -2900,10 +2921,9 @@
         const idx = parseInt(delBtn.dataset.idx);
         if (isNaN(idx) || idx < 0 || idx >= houses.length) return;
         const houseName = houses[idx].name;
-        houses.splice(idx, 1);
-        try { saveHouseData(); } catch (e) {}
-        renderHouses();
-        showToast('已删除 ' + houseName);
+        pendingDeleteIdx = idx;
+        document.getElementById('deleteConfirmText').textContent = '确定要删除「' + houseName + '」吗？删除后将同时清除该房子的所有水电记录和收租记录。';
+        openModal('deleteConfirmModal');
         return;
       }
 
@@ -3056,6 +3076,27 @@
     document.getElementById('closeAddHouseModal').addEventListener('click', () => closeModal('addHouseModal'));
     document.getElementById('addHouseModal').addEventListener('click', (e) => {
       if (e.target === document.getElementById('addHouseModal')) closeModal('addHouseModal');
+    });
+
+    // 删除确认模态框事件
+    document.getElementById('closeDeleteConfirmModal').addEventListener('click', () => closeModal('deleteConfirmModal'));
+    document.getElementById('deleteConfirmModal').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('deleteConfirmModal')) closeModal('deleteConfirmModal');
+    });
+    document.getElementById('btnCancelDelete').addEventListener('click', () => {
+      pendingDeleteIdx = -1;
+      closeModal('deleteConfirmModal');
+    });
+    document.getElementById('btnConfirmDelete').addEventListener('click', () => {
+      if (pendingDeleteIdx >= 0 && pendingDeleteIdx < houses.length) {
+        const houseName = houses[pendingDeleteIdx].name;
+        houses.splice(pendingDeleteIdx, 1);
+        try { saveHouseData(); } catch (e) {}
+        renderHouses();
+        showToast('已删除 ' + houseName);
+      }
+      pendingDeleteIdx = -1;
+      closeModal('deleteConfirmModal');
     });
     document.getElementById('btnSubmitHouse').addEventListener('click', () => {
       const name = document.getElementById('newHouseName').value.trim();
