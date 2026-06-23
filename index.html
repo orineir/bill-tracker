@@ -2011,7 +2011,6 @@
         const dayLabel = (homeDate.getMonth()+1) + '月' + homeDate.getDate() + '日 周' + weekDays[homeDate.getDay()];
         list.innerHTML = `
           <div class="empty-state">
-            <div class="empty-icon">📅</div>
             <div class="empty-text">${dayLabel} 暂无记录</div>
           </div>`;
         return;
@@ -2918,14 +2917,9 @@
       // 导出按钮
       html += `
         <div style="margin-top:16px;padding-top:16px;border-top:1.5px solid var(--rule);">
-          <div style="display:flex;gap:8px;">
-            <button type="button" class="submit-btn" id="btnExportSummaryExcel" style="flex:1;background:var(--accent2);font-size:13px;padding:12px;">
-              📥 导出 Excel
-            </button>
-            <button type="button" class="submit-btn" id="btnExportSummaryWord" style="flex:1;background:#2b5797;font-size:13px;padding:12px;">
-              📄 导出 Word
-            </button>
-          </div>
+          <button type="button" class="submit-btn" id="btnExportSummaryExcel" style="background:var(--accent2);font-size:13px;padding:12px;">
+            📥 导出 Excel
+          </button>
         </div>
       `;
 
@@ -2934,9 +2928,6 @@
       // 绑定导出事件
       document.getElementById('btnExportSummaryExcel').addEventListener('click', () => {
         exportSummaryExcel(house, monthPrefix, rentAmount, rentPaid, monthRecs, elecUsed, waterUsed, elecCost, waterCost, utilityTotal, grandTotal);
-      });
-      document.getElementById('btnExportSummaryWord').addEventListener('click', () => {
-        exportSummaryWord(house, monthPrefix, rentAmount, rentPaid, monthRecs, elecUsed, waterUsed, elecCost, waterCost, utilityTotal, grandTotal);
       });
     }
 
@@ -2974,47 +2965,18 @@
       openDocPage(html, house.name + '_月总结_' + monthPrefix + '.xls');
     }
 
-    function exportSummaryWord(house, monthPrefix, rentAmount, rentPaid, monthRecs, elecUsed, waterUsed, elecCost, waterCost, utilityTotal, grandTotal) {
-      let html = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word">';
-      html += '<head><meta charset="utf-8"><title>' + house.name + ' 月总结</title>';
-      html += '<style>body{font-family:微软雅黑,sans-serif;padding:20px;}table{border-collapse:collapse;width:100%;}th,td{border:1px solid #333;padding:8px 12px;}th{background:#f0f0f0;}</style>';
-      html += '</head><body>';
-      html += '<h2>' + house.name + ' 月总结 (' + monthPrefix + ')</h2>';
-      if (house.owner) {
-        html += '<p style="font-size:14px;color:#666;">户主：' + house.owner + '</p>';
-      }
-      html += '<table><tr><th>项目</th><th>金额</th><th>备注</th></tr>';
-      html += '<tr><td>月租金</td><td>' + rentAmount.toFixed(2) + ' 元</td><td>' + (rentPaid ? '已收租' : '待收租') + '</td></tr>';
-      if (monthRecs.length >= 2) {
-        html += '<tr><td>用电量</td><td>' + elecUsed.toFixed(1) + ' 度</td><td></td></tr>';
-        html += '<tr><td>电费</td><td>' + elecCost.toFixed(2) + ' 元</td><td></td></tr>';
-        html += '<tr><td>用水量</td><td>' + waterUsed.toFixed(1) + ' m³</td><td></td></tr>';
-        html += '<tr><td>水费</td><td>' + waterCost.toFixed(2) + ' 元</td><td></td></tr>';
-        html += '<tr><td>水电合计</td><td>' + utilityTotal.toFixed(2) + ' 元</td><td></td></tr>';
-      }
-      html += '<tr style="font-weight:bold;"><td>应收合计</td><td>' + grandTotal.toFixed(2) + ' 元</td><td></td></tr>';
-      html += '</table>';
-      if (monthRecs.length > 0) {
-        html += '<h3>水电读数记录</h3>';
-        html += '<table><tr><th>日期</th><th>电表读数(度)</th><th>水表读数(m³)</th></tr>';
-        monthRecs.forEach(r => {
-          html += '<tr><td>' + r.date + '</td><td>' + Number(r.elec).toFixed(1) + '</td><td>' + Number(r.water).toFixed(1) + '</td></tr>';
-        });
-        html += '</table>';
-      }
-      html += '</body></html>';
-      openDocPage(html, house.name + '_月总结_' + monthPrefix + '.doc');
-    }
-
     function openDocPage(html, filename) {
       const win = window.open('', '_blank');
       if (win) {
         win.document.write(html);
         win.document.close();
-        // 在新页面顶部添加保存提示
+        // 添加自适应屏幕样式和保存提示
+        const style = win.document.createElement('style');
+        style.textContent = 'body{padding-top:50px !important;}table{width:100% !important;font-size:16px !important;}th,td{padding:10px !important;word-break:break-all;}h2{font-size:22px !important;}h3{font-size:18px !important;}p{font-size:16px !important;}';
+        win.document.head.appendChild(style);
         const tip = win.document.createElement('div');
-        tip.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#333;color:#fff;padding:10px;text-align:center;font-size:14px;z-index:9999;';
-        tip.innerHTML = filename + ' — 请点击浏览器菜单 <b>⋮</b> → <b>保存页面</b> 或 <b>下载页面</b> <button onclick="this.parentNode.remove()" style="margin-left:10px;padding:4px 12px;border:none;border-radius:4px;background:#fff;color:#333;cursor:pointer;">关闭提示</button>';
+        tip.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#333;color:#fff;padding:12px;text-align:center;font-size:14px;z-index:9999;';
+        tip.innerHTML = filename + ' — 点击菜单 <b>⋮</b> → <b>保存页面</b> <button onclick="this.parentNode.remove()" style="margin-left:10px;padding:4px 12px;border:none;border-radius:4px;background:#fff;color:#333;cursor:pointer;">关闭</button>';
         win.document.body.prepend(tip);
       } else {
         showToast('弹窗被拦截，请允许弹窗后重试');
