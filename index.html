@@ -28,7 +28,7 @@
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-    html { font-size: 16px; overscroll-behavior-y: none; }
+    html { font-size: 16px; }
     body {
       font-family: var(--font);
       color: var(--ink);
@@ -36,8 +36,6 @@
       line-height: 1.6;
       min-height: 100vh;
       padding-bottom: 80px;
-      overscroll-behavior-y: none;
-      touch-action: pan-y;
     }
 
     /* ===== 顶部导航 ===== */
@@ -1884,20 +1882,6 @@
   <div class="toast" id="toast"></div>
 
   <script>
-    // 阻止下拉刷新
-    let startY = 0;
-    document.addEventListener('touchstart', function(e) {
-      startY = e.touches[0].pageY;
-    }, { passive: true });
-    document.addEventListener('touchmove', function(e) {
-      const y = e.touches[0].pageY;
-      const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
-      // 如果页面在顶部且向下滑动，阻止默认行为
-      if (scrollTop <= 0 && y > startY) {
-        e.preventDefault();
-      }
-    }, { passive: false });
-
     // ===================== 数据 =====================
     const defaultCategories = [
       { id: 'food', name: '餐饮', icon: '🍜', type: 'expense' },
