@@ -1815,6 +1815,10 @@
           <input type="text" class="form-input" id="newHouseOwner" placeholder="例如：张三">
         </div>
         <div class="form-row">
+          <label class="form-label">户主联系方式</label>
+          <input type="text" class="form-input" id="newHousePhone" placeholder="例如：13812345678">
+        </div>
+        <div class="form-row">
           <label class="form-label">月租金（元）</label>
           <input type="number" class="form-input" id="newHouseRent" placeholder="0.00" step="0.01" min="0">
         </div>
@@ -2739,7 +2743,7 @@
         return `
           <div class="house-card">
             <div class="house-card-header">
-              <div class="house-card-name"><span>🏠</span>${house.name}${house.owner ? ' <span style="font-size:12px;color:var(--muted);font-weight:400;">（户主：' + house.owner + '）</span>' : ''}</div>
+              <div class="house-card-name"><span>🏠</span>${house.name}${house.owner ? ' <span style="font-size:12px;color:var(--muted);font-weight:400;">（户主：' + house.owner + (house.phone ? ' ' + house.phone : '') + '）</span>' : ''}</div>
               <div class="house-card-actions">
                 <button type="button" class="house-summary-btn" data-idx="${idx}" title="月总结" style="width:auto;padding:0 10px;font-size:11px;font-weight:600;font-family:var(--font);border-radius:8px;border:1.5px solid var(--rule);background:transparent;cursor:pointer;color:var(--ink);transition:all 0.2s ease;">
                   📊 月总结
@@ -2939,8 +2943,12 @@
       html += '<style>body{font-family:微软雅黑,sans-serif;padding:20px;}table{border-collapse:collapse;width:100%;}th,td{border:1px solid #999;padding:8px 12px;}th{background:#4472C4;color:#fff;}</style>';
       html += '</head><body>';
       html += '<h2>' + house.name + ' 月总结 (' + monthPrefix + ')</h2>';
-      if (house.owner) {
-        html += '<p style="font-size:14px;color:#666;">户主：' + house.owner + '</p>';
+      if (house.owner || house.phone) {
+        html += '<p style="font-size:14px;color:#666;">';
+        if (house.owner) html += '户主：' + house.owner;
+        if (house.owner && house.phone) html += '，';
+        if (house.phone) html += '联系方式：' + house.phone;
+        html += '</p>';
       }
       html += '<table><tr><th>项目</th><th>金额</th><th>备注</th></tr>';
       html += '<tr><td>月租金</td><td>' + rentAmount.toFixed(2) + ' 元</td><td>' + (rentPaid ? '已收租' : '待收租') + '</td></tr>';
@@ -3099,6 +3107,7 @@
         if (isNaN(idx) || idx < 0 || idx >= houses.length) return;
         document.getElementById('newHouseName').value = houses[idx].name;
         document.getElementById('newHouseOwner').value = houses[idx].owner || '';
+        document.getElementById('newHousePhone').value = houses[idx].phone || '';
         document.getElementById('newHouseRent').value = houses[idx].rent || '';
         document.getElementById('btnSubmitHouse').dataset.editIdx = idx;
         openModal('addHouseModal');
@@ -3214,6 +3223,7 @@
     document.getElementById('btnAddHouse').addEventListener('click', () => {
       document.getElementById('newHouseName').value = '';
       document.getElementById('newHouseOwner').value = '';
+      document.getElementById('newHousePhone').value = '';
       document.getElementById('newHouseRent').value = '';
       document.getElementById('btnSubmitHouse').dataset.editIdx = '';
       openModal('addHouseModal');
@@ -3236,10 +3246,13 @@
     document.getElementById('btnConfirmDelete').addEventListener('click', () => {
       if (pendingDeleteIdx >= 0 && pendingDeleteIdx < houses.length) {
         const houseName = houses[pendingDeleteIdx].name;
+        // 删除房子，但保留已同步到记账本的记录（records中的记录）
+        // 房子的水电读数记录（houses[idx].records）和收租记录（houses[idx].rentRecords）随房子一起删除
+        // 但已同步到主记账本（bt_records）的收入记录保留
         houses.splice(pendingDeleteIdx, 1);
         try { saveHouseData(); } catch (e) {}
         renderHouses();
-        showToast('已删除 ' + houseName);
+        showToast('已删除 ' + houseName + '，记账记录已保留');
       }
       pendingDeleteIdx = -1;
       closeModal('deleteConfirmModal');
@@ -3247,16 +3260,18 @@
     document.getElementById('btnSubmitHouse').addEventListener('click', () => {
       const name = document.getElementById('newHouseName').value.trim();
       const owner = document.getElementById('newHouseOwner').value.trim();
+      const phone = document.getElementById('newHousePhone').value.trim();
       const rent = parseFloat(document.getElementById('newHouseRent').value) || 0;
       if (!name) { showToast('请输入房子名称'); return; }
       const editIdx = document.getElementById('btnSubmitHouse').dataset.editIdx;
       if (editIdx !== '' && editIdx !== undefined) {
         houses[parseInt(editIdx)].name = name;
         houses[parseInt(editIdx)].owner = owner;
+        houses[parseInt(editIdx)].phone = phone;
         houses[parseInt(editIdx)].rent = rent;
         showToast('房子已更新');
       } else {
-        houses.push({ id: 'house_' + Date.now(), name, owner, rent, records: [], rentRecords: [] });
+        houses.push({ id: 'house_' + Date.now(), name, owner, phone, rent, records: [], rentRecords: [] });
         showToast('房子已添加');
       }
       saveHouseData();
