@@ -2661,6 +2661,8 @@
 
     // 将房屋收支同步到记账本
     function syncHouseToRecords(houseName, catId, amount, monthStr, note) {
+      const now = new Date();
+      const todayStr = now.getFullYear() + '-' + (now.getMonth() + 1).toString().padStart(2, '0') + '-' + now.getDate().toString().padStart(2, '0') + ' ' + now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
       // 查找当月是否已有该房子该分类的记录
       const existIdx = records.findIndex(r =>
         r.type === 'income' &&
@@ -2669,14 +2671,14 @@
       );
       if (existIdx >= 0) {
         records[existIdx].amount = amount;
-        records[existIdx].date = monthStr + '-15 12:00';
+        records[existIdx].date = todayStr;
       } else {
         records.push({
           id: 'rec_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
           type: 'income',
           category: catId,
           amount: amount,
-          date: monthStr + '-15 12:00',
+          date: todayStr,
           note: note
         });
       }
@@ -2722,7 +2724,8 @@
         `).join('');
 
         const historyHtml = records.slice(-6).reverse().map((r, ri) => {
-          const p = ri < records.length - 1 ? records[records.length - 2 - ri] : null;
+          const actualIdx = records.length - 1 - ri;
+          const p = actualIdx > 0 ? records[actualIdx - 1] : null;
           const uE = p ? Math.max(0, r.elec - p.elec) : r.elec;
           const uW = p ? Math.max(0, r.water - p.water) : r.water;
           const cost = uE * elecUnitPrice + uW * waterUnitPrice;
@@ -2731,6 +2734,7 @@
               <div class="history-month">${r.date}</div>
               <div class="history-usage"><span>⚡${Number(r.elec).toFixed(1)}度</span><span>💧${Number(r.water).toFixed(1)}m³</span></div>
               <div class="history-cost">${p ? '用量 ' + Number(uE).toFixed(1) + '度/' + Number(uW).toFixed(1) + 'm³' : '首次录入'}</div>
+              <button type="button" class="del-meter-btn" data-house-idx="${idx}" data-rec-idx="${actualIdx}" title="删除此记录" style="flex-shrink:0;width:24px;height:24px;border:none;border-radius:6px;background:transparent;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;">✕</button>
             </div>
           `;
         }).join('');
@@ -3076,6 +3080,44 @@
         pendingDeleteIdx = idx;
         document.getElementById('deleteConfirmText').textContent = '确定要删除「' + houseName + '」吗？删除后将同时清除该房子的所有水电记录和收租记录。';
         openModal('deleteConfirmModal');
+        return;
+      }
+
+      // 删除水电记录按钮
+      target = e.target;
+      while (target && target !== list && !target.classList.contains('del-meter-btn')) {
+        target = target.parentElement;
+      }
+      const delMeterBtn = target && target.classList.contains('del-meter-btn') ? target : null;
+      if (delMeterBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        const houseIdx = parseInt(delMeterBtn.dataset.houseIdx);
+        const recIdx = parseInt(delMeterBtn.dataset.recIdx);
+        if (isNaN(houseIdx) || isNaN(recIdx)) return;
+        if (!houses[houseIdx] || !houses[houseIdx].records) return;
+        if (recIdx < 0 || recIdx >= houses[houseIdx].records.length) return;
+        const rec = houses[houseIdx].records[recIdx];
+        if (!confirm('确定删除 ' + rec.date + ' 的水电记录吗？\n删除后电表/水表读数将回到该记录之前的状态。')) return;
+        // 删除该记录
+        houses[houseIdx].records.splice(recIdx, 1);
+        // 如果删除后没有记录了，清空输入框
+        if (houses[houseIdx].records.length === 0) {
+          const elecInput = document.getElementById('elec_' + houseIdx);
+          const waterInput = document.getElementById('water_' + houseIdx);
+          if (elecInput) elecInput.value = '0';
+          if (waterInput) waterInput.value = '0';
+        } else {
+          // 回到删除前一条记录的读数
+          const prevRec = houses[houseIdx].records[houses[houseIdx].records.length - 1];
+          const elecInput = document.getElementById('elec_' + houseIdx);
+          const waterInput = document.getElementById('water_' + houseIdx);
+          if (elecInput) elecInput.value = prevRec.elec;
+          if (waterInput) waterInput.value = prevRec.water;
+        }
+        saveHouseData();
+        renderHouses();
+        showToast('已删除 ' + rec.date + ' 的水电记录');
         return;
       }
 
