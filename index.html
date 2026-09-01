@@ -2929,6 +2929,58 @@
       renderCharts();
     }
 
+    // 重新同步某房子某月的所有水电费收入记录
+    function rebuildHouseUtilityRecords(houseIdx, monthStr) {
+      const house = houses[houseIdx];
+      if (!house || !house.records) return;
+      const houseName = house.name;
+      // 先清除该房子当月所有水电费收入记录
+      records = records.filter(r =>
+        !(r.type === 'income' &&
+          (r.category === 'elec_income' || r.category === 'water_income') &&
+          r.note.startsWith(houseName + ' 电费') &&
+          r.date.startsWith(monthStr))
+      );
+      records = records.filter(r =>
+        !(r.type === 'income' &&
+          (r.category === 'elec_income' || r.category === 'water_income') &&
+          r.note.startsWith(houseName + ' 水费') &&
+          r.date.startsWith(monthStr))
+      );
+      // 重新计算当月每条记录产生的水电费
+      const recs = house.records;
+      for (let i = 1; i < recs.length; i++) {
+        if (!recs[i].date.startsWith(monthStr)) continue;
+        const prev = recs[i - 1];
+        const cur = recs[i];
+        const usedElec = Math.max(0, cur.elec - prev.elec);
+        const usedWater = Math.max(0, cur.water - prev.water);
+        const elecCost = usedElec * elecUnitPrice;
+        const waterCost = usedWater * waterUnitPrice;
+        if (elecCost > 0) {
+          records.push({
+            id: 'rec_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6) + '_' + i + 'e',
+            type: 'income',
+            category: 'elec_income',
+            amount: elecCost,
+            date: cur.date + ' 00:00',
+            note: houseName + ' 电费(' + Number(usedElec).toFixed(1) + '度)'
+          });
+        }
+        if (waterCost > 0) {
+          records.push({
+            id: 'rec_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6) + '_' + i + 'w',
+            type: 'income',
+            category: 'water_income',
+            amount: waterCost,
+            date: cur.date + ' 00:00',
+            note: houseName + ' 水费(' + Number(usedWater).toFixed(1) + 'm³)'
+          });
+        }
+      }
+      saveData();
+    }
+
     function renderHouses() {
       const list = document.getElementById('houseList');
       if (!list) return;
@@ -3541,16 +3593,19 @@
         if (recIdx < 0 || recIdx >= houses[houseIdx].records.length) return;
         const rec = houses[houseIdx].records[recIdx];
         if (!confirm('确定删除 ' + rec.date + ' 的水电记录吗？\n删除后电表/水表读数将回到该记录之前的状态。')) return;
+
+        const monthStr = rec.date.slice(0, 7);
         // 删除该记录
         houses[houseIdx].records.splice(recIdx, 1);
-        // 如果删除后没有记录了，清空输入框
+        // 重新同步当月水电费收入记录
+        rebuildHouseUtilityRecords(houseIdx, monthStr);
+        // 更新输入框显示
         if (houses[houseIdx].records.length === 0) {
           const elecInput = document.getElementById('elec_' + houseIdx);
           const waterInput = document.getElementById('water_' + houseIdx);
           if (elecInput) elecInput.value = '0';
           if (waterInput) waterInput.value = '0';
         } else {
-          // 回到删除前一条记录的读数
           const prevRec = houses[houseIdx].records[houses[houseIdx].records.length - 1];
           const elecInput = document.getElementById('elec_' + houseIdx);
           const waterInput = document.getElementById('water_' + houseIdx);
@@ -3560,6 +3615,9 @@
         saveHouseData();
         renderHouses();
         renderHouseDetail();
+        renderRecords();
+        updateStats();
+        renderCharts();
         showToast('已删除 ' + rec.date + ' 的水电记录');
         return;
       }
@@ -3828,7 +3886,10 @@
         if (recIdx < 0 || recIdx >= houses[houseIdx].records.length) return;
         const rec = houses[houseIdx].records[recIdx];
         if (!confirm('确定删除 ' + rec.date + ' 的水电记录吗？\n删除后电表/水表读数将回到该记录之前的状态。')) return;
+        const monthStr = rec.date.slice(0, 7);
         houses[houseIdx].records.splice(recIdx, 1);
+        // 重新同步当月水电费收入记录
+        rebuildHouseUtilityRecords(houseIdx, monthStr);
         if (houses[houseIdx].records.length === 0) {
           const elecInput = document.getElementById('elec_' + houseIdx);
           const waterInput = document.getElementById('water_' + houseIdx);
@@ -3843,6 +3904,10 @@
         }
         saveHouseData();
         renderHouseDetail();
+        renderHouses();
+        renderRecords();
+        updateStats();
+        renderCharts();
         showToast('已删除 ' + rec.date + ' 的水电记录');
         return;
       }
