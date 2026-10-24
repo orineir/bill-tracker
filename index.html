@@ -4015,19 +4015,52 @@
       const house = houses[idx];
       if (!house) return;
 
-      const rows = buildHouseExcelRows(house);
-      const recCount = rows.length - 1;
+      // 与明细页信息栏保持一致：房号、住户、手机号、押金
+      const infoRows = [
+        ['房号', house.name || ''],
+        ['住户', house.owner || ''],
+        ['手机号', house.phone || ''],
+        ['押金', house.deposit ? Number(house.deposit).toFixed(2) : '']
+      ];
 
-      excelTSV = rows.map(r => r.join('\t')).join('\n');
+      const dataRows = buildHouseExcelRows(house);
+      const recCount = dataRows.length - 1;
+
+      // 复制用文本：信息区 + 空行 + 数据表
+      const tsvLines = [];
+      infoRows.forEach(r => tsvLines.push(r.join('\t')));
+      tsvLines.push('');
+      dataRows.forEach(r => tsvLines.push(r.join('\t')));
+      excelTSV = tsvLines.join('\n');
+
       excelFileName = house.name + '_房租明细_' + new Date().toISOString().slice(0, 10) + '.xls';
 
-      let html = '<html><head><meta charset="utf-8"></head><body><table border="1" cellspacing="0" cellpadding="4">';
-      rows.forEach((r, i) => {
+      let html = '<html><head><meta charset="utf-8"></head><body>';
+      html += '<table border="1" cellspacing="0" cellpadding="4">';
+      // 显式列宽：Excel 打开 HTML 表格时不会自动适应，不设宽度会导致日期显示成 ####
+      html += '<colgroup>';
+      html += '<col style="width:92px;"><col style="width:72px;"><col style="width:72px;"><col style="width:72px;">';
+      html += '<col style="width:72px;"><col style="width:72px;"><col style="width:72px;">';
+      html += '<col style="width:86px;"><col style="width:86px;">';
+      html += '</colgroup>';
+      infoRows.forEach(r => {
         html += '<tr>';
-        r.forEach(c => {
-          html += i === 0
-            ? '<th style="background:#f3e9e2;font-weight:bold;text-align:center;">' + c + '</th>'
-            : '<td>' + c + '</td>';
+        html += '<td style="background:#faf5f1;font-weight:bold;">' + r[0] + '</td>';
+        html += '<td colspan="8">' + r[1] + '</td>';
+        html += '</tr>';
+      });
+      html += '<tr><td colspan="9">&nbsp;</td></tr>';
+      dataRows.forEach((r, i) => {
+        html += '<tr>';
+        r.forEach((c, ci) => {
+          if (i === 0) {
+            html += '<th style="background:#f3e9e2;font-weight:bold;text-align:center;">' + c + '</th>';
+          } else if (ci === 0) {
+            // 日期列强制文本格式，避免被 Excel 转成日期序列号后显示异常
+            html += '<td style="mso-number-format:\'\\@\';">' + c + '</td>';
+          } else {
+            html += '<td>' + c + '</td>';
+          }
         });
         html += '</tr>';
       });
