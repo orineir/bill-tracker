@@ -1699,6 +1699,29 @@
       transition: all 0.2s;
     }
     .house-table .del-btn-small:hover { background: rgba(224,122,95,0.1); color: var(--danger); }
+
+    /* 横滑时固定第一列（时间），避免看不到对应日期 */
+    .house-table td:first-child {
+      position: sticky;
+      left: 0;
+      z-index: 2;
+      background: var(--bg2);
+      box-shadow: 1px 0 0 var(--rule);
+    }
+    .house-table th:first-child {
+      position: sticky;
+      left: 0;
+      z-index: 3;
+      background: #fdf1ec;
+      box-shadow: 1px 0 0 var(--rule);
+    }
+    .table-scroll-hint {
+      font-size: 11px;
+      color: var(--muted);
+      text-align: center;
+      padding: 8px 0 4px;
+    }
+
     .house-detail-input-row {
       display: flex;
       gap: 8px;
@@ -2120,9 +2143,8 @@
           <p style="font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:8px;">
             备份包含：记账记录、分类、房源、水电读数、单价、货币设置。
           </p>
-          <button class="submit-btn" id="btnExportData" style="margin-bottom:8px;background:var(--bg);color:var(--ink);border:1.5px solid var(--rule);">导出完整备份 (JSON)</button>
-          <button class="submit-btn" id="btnImportData" style="margin-bottom:8px;background:var(--bg);color:var(--ink);border:1.5px solid var(--rule);">导入备份（会覆盖当前数据）</button>
-          <input type="file" id="importFile" accept=".json" style="display:none;">
+          <button class="submit-btn" id="btnExportData" style="margin-bottom:8px;background:var(--bg);color:var(--ink);border:1.5px solid var(--rule);">导出备份（复制或下载）</button>
+          <button class="submit-btn" id="btnImportData" style="margin-bottom:8px;background:var(--bg);color:var(--ink);border:1.5px solid var(--rule);">导入备份（粘贴内容）</button>
           <button class="submit-btn" id="btnClearData" style="background:var(--danger);color:#fff;">清空所有数据</button>
         </div>
         <div class="form-row">
@@ -2140,6 +2162,27 @@
             数据保存在浏览器本地，不会上传到服务器。<br>
             建议定期导出备份。
           </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 备份内容弹层：复制/粘贴方式，兼容不支持下载与文件选择的 WebView -->
+  <div class="modal-overlay" id="backupModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title" id="backupTitle">备份</div>
+        <button class="modal-close" id="closeBackupModal">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="form-card" style="margin-top:0;border:none;padding:0;">
+        <p id="backupHint" style="font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:8px;white-space:pre-line;"></p>
+        <textarea id="backupText" spellcheck="false" style="width:100%;height:170px;font-family:var(--font-mono);font-size:11px;line-height:1.5;padding:8px;border:1.5px solid var(--rule);border-radius:8px;background:var(--bg);color:var(--ink);resize:vertical;"></textarea>
+        <div style="margin-top:10px;">
+          <button class="submit-btn" id="btnCopyBackup" style="margin-bottom:8px;background:var(--bg);color:var(--ink);border:1.5px solid var(--rule);">复制全文</button>
+          <button class="submit-btn" id="btnDownloadBackup" style="margin-bottom:8px;background:var(--bg);color:var(--ink);border:1.5px solid var(--rule);">下载文件</button>
+          <button class="submit-btn" id="btnConfirmImport" style="display:none;">解析并导入</button>
         </div>
       </div>
     </div>
@@ -2303,10 +2346,92 @@
     let statsYear = new Date().getFullYear();
     let statsMonth = new Date().getMonth();
 
+    // ===================== 数据层（M1 步骤 1：IndexedDB 双写） =====================
+    // 当前阶段：localStorage 仍是唯一读写路径，IndexedDB 作为第二份副本并行写入。
+    // 页面行为与改造前完全一致，出问题可直接回退到上一提交。
+    const IDB_NAME = 'billtracker';
+    const IDB_VERSION = 1;
+    const IDB_STORE = 'kv';
+    const SYNC_KEYS = ['bt_records', 'bt_categories', 'bt_houses', 'bt_elec_price', 'bt_water_price', 'bt_currency'];
+    let idb = null;
+
+    function openIDB() {
+      return new Promise((resolve, reject) => {
+        if (!window.indexedDB) { reject(new Error('IndexedDB 不可用')); return; }
+        const req = indexedDB.open(IDB_NAME, IDB_VERSION);
+        req.onupgradeneeded = (e) => {
+          const db = e.target.result;
+          if (!db.objectStoreNames.contains(IDB_STORE)) db.createObjectStore(IDB_STORE);
+        };
+        req.onsuccess = (e) => resolve(e.target.result);
+        req.onerror = (e) => reject(e.target.error);
+      });
+    }
+
+    function idbSet(key, value) {
+      if (!idb) return;
+      try {
+        const tx = idb.transaction(IDB_STORE, 'readwrite');
+        tx.objectStore(IDB_STORE).put(value, key);
+      } catch (e) {
+        console.warn('[数据层] IndexedDB 写入失败：' + key, e);
+      }
+    }
+
+    function idbGetAll() {
+      return new Promise((resolve) => {
+        if (!idb) { resolve({}); return; }
+        const out = {};
+        try {
+          const tx = idb.transaction(IDB_STORE, 'readonly');
+          const req = tx.objectStore(IDB_STORE).openCursor();
+          req.onsuccess = (e) => {
+            const cursor = e.target.result;
+            if (cursor) { out[cursor.key] = cursor.value; cursor.continue(); }
+            else resolve(out);
+          };
+          req.onerror = () => resolve(out);
+        } catch (e) { resolve(out); }
+      });
+    }
+
+    // 双写：localStorage 与 IndexedDB 同时写入
+    function writeBoth(key, value) {
+      localStorage.setItem(key, value);
+      idbSet(key, value);
+    }
+
+    async function initDataLayer() {
+      try {
+        idb = await openIDB();
+
+        // 请求持久化存储，降低浏览器因空间不足自动清理的概率
+        if (navigator.storage && navigator.storage.persist) {
+          const granted = await navigator.storage.persist().catch(() => false);
+          console.log('[数据层] 持久化存储：' + (granted ? '已授予' : '未授予'));
+        }
+
+        // 首次迁移：IndexedDB 为空时，把 localStorage 现有数据复制过去（不删除原数据）
+        const existing = await idbGetAll();
+        if (Object.keys(existing).length === 0) {
+          let count = 0;
+          SYNC_KEYS.forEach(k => {
+            const raw = localStorage.getItem(k);
+            if (raw !== null) { idbSet(k, raw); count++; }
+          });
+          console.log('[数据层] 已从 localStorage 复制 ' + count + ' 项到 IndexedDB');
+        } else {
+          console.log('[数据层] IndexedDB 已有 ' + Object.keys(existing).length + ' 项，跳过迁移');
+        }
+      } catch (e) {
+        console.warn('[数据层] IndexedDB 初始化失败，继续使用 localStorage', e);
+      }
+    }
+
     // ===================== 工具函数 =====================
     function saveData() {
-      localStorage.setItem('bt_categories', JSON.stringify(categories));
-      localStorage.setItem('bt_records', JSON.stringify(records));
+      writeBoth('bt_categories', JSON.stringify(categories));
+      writeBoth('bt_records', JSON.stringify(records));
     }
 
     function formatMoney(n) {
@@ -2691,8 +2816,8 @@
       if (e.target === document.getElementById('settingsModal')) closeModal('settingsModal');
     });
 
-    // 导出数据（完整版：含房源、水电读数、单价、货币）
-    document.getElementById('btnExportData').addEventListener('click', () => {
+    // ===================== 备份：导出 =====================
+    function buildBackupData() {
       const readJSON = (key, fallback) => {
         try {
           const raw = localStorage.getItem(key);
@@ -2701,8 +2826,7 @@
           return fallback;
         }
       };
-
-      const data = {
+      return {
         exportVersion: 2,
         exportDate: new Date().toISOString(),
         categories: readJSON('bt_categories', []),
@@ -2712,86 +2836,161 @@
         waterPrice: localStorage.getItem('bt_water_price') || '',
         currency: localStorage.getItem('bt_currency') || '¥'
       };
+    }
 
-      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = '记账本完整备份_' + new Date().toISOString().slice(0, 10) + '.json';
-      a.click();
-      URL.revokeObjectURL(url);
+    let backupJSON = '';
+
+    function showExportBackup() {
+      const data = buildBackupData();
+      // 不缩进，减小体积；导入时由程序解析，无需可读格式
+      backupJSON = JSON.stringify(data);
 
       const houseCount = Array.isArray(data.houses) ? data.houses.length : 0;
       const recordCount = Array.isArray(data.records) ? data.records.length : 0;
-      showToast('已导出 ' + recordCount + ' 条流水 · ' + houseCount + ' 套房源');
-    });
 
-    // 导入数据
-    document.getElementById('btnImportData').addEventListener('click', () => {
-      document.getElementById('importFile').click();
-    });
-    document.getElementById('importFile').addEventListener('change', (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
+      document.getElementById('backupTitle').textContent = '导出备份';
+      document.getElementById('backupHint').textContent =
+        '共 ' + recordCount + ' 条流水、' + houseCount + ' 套房源，约 ' + backupJSON.length + ' 字符。\n' +
+        '点「复制全文」后，粘贴到手机备忘录或笔记应用保存（不要直接发微信，消息长度有限），再通过备忘录分享到网盘或电脑。\n' +
+        '若「下载文件」没有生成文件，说明当前环境不支持下载，用复制即可。';
+
+      const ta = document.getElementById('backupText');
+      ta.value = backupJSON;
+      ta.readOnly = true;
+
+      document.getElementById('btnCopyBackup').style.display = '';
+      document.getElementById('btnDownloadBackup').style.display = '';
+      document.getElementById('btnConfirmImport').style.display = 'none';
+      openModal('backupModal');
+    }
+
+    function copyBackupText() {
+      const ta = document.getElementById('backupText');
+      const text = ta.value;
+      let ok = false;
+      try {
+        ta.readOnly = false;
+        ta.select();
+        ta.setSelectionRange(0, text.length);
+        ok = document.execCommand('copy');
+      } catch (e) {
+        ok = false;
+      }
+      ta.readOnly = true;
+
+      if (ok) { showToast('已复制，请粘贴保存'); return; }
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text)
+          .then(() => showToast('已复制，请粘贴保存'))
+          .catch(() => showToast('复制失败，请长按文本框手动选择'));
+      } else {
+        showToast('复制失败，请长按文本框手动选择');
+      }
+    }
+
+    function downloadBackup() {
+      try {
+        const blob = new Blob([backupJSON], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = '记账本完整备份_' + new Date().toISOString().slice(0, 10) + '.json';
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+        showToast('已尝试下载；若没有文件，请改用「复制全文」');
+      } catch (e) {
+        showToast('下载失败，请改用「复制全文」');
+      }
+    }
+
+    document.getElementById('btnExportData').addEventListener('click', showExportBackup);
+
+    // ===================== 备份：导入 =====================
+    function showImportBackup() {
+      document.getElementById('backupTitle').textContent = '导入备份';
+      document.getElementById('backupHint').textContent =
+        '把之前复制的备份内容整段粘贴到下面，再点「解析并导入」。\n' +
+        '导入会覆盖本机现有数据，建议先导出一份当前数据。';
+
+      const ta = document.getElementById('backupText');
+      ta.value = '';
+      ta.readOnly = false;
+
+      document.getElementById('btnCopyBackup').style.display = 'none';
+      document.getElementById('btnDownloadBackup').style.display = 'none';
+      document.getElementById('btnConfirmImport').style.display = '';
+      openModal('backupModal');
+    }
+
+    function applyImportedData(data) {
+      if (!data || typeof data !== 'object') throw new Error('invalid');
+
+      if (Array.isArray(data.categories)) {
+        categories = data.categories.map(c => {
+          const def = defaultCategories.find(d => d.id === c.id);
+          return { ...c, type: c.type || (def ? def.type : 'expense') };
+        });
+      }
+      if (Array.isArray(data.records)) records = data.records;
+
+      // 房源与水电读数：旧版导出不含这些字段，缺失时保持现有数据不变
+      let importedHouses = 0;
+      if (Array.isArray(data.houses)) {
+        houses = data.houses.map(h => ({
+          ...h,
+          records: Array.isArray(h.records) ? h.records : [],
+          rentRecords: Array.isArray(h.rentRecords) ? h.rentRecords : []
+        }));
+        importedHouses = houses.length;
+      }
+      if (data.elecPrice !== undefined && data.elecPrice !== '') {
+        elecUnitPrice = parseFloat(data.elecPrice) || 0;
+      }
+      if (data.waterPrice !== undefined && data.waterPrice !== '') {
+        waterUnitPrice = parseFloat(data.waterPrice) || 0;
+      }
+      if (typeof data.currency === 'string' && data.currency) {
+        currentCurrency = data.currency;
+        writeBoth('bt_currency', currentCurrency);
+      }
+
+      saveData();
+      saveHouseData();
+      updateCurrencyUI();
+      renderRecords();
+      updateStats();
+      renderCharts();
+      renderManageCats();
+      renderHouses();
+
+      return { records: records.length, houses: importedHouses };
+    }
+
+    function confirmImportBackup() {
+      const raw = document.getElementById('backupText').value.trim();
+      if (!raw) { showToast('请先粘贴备份内容'); return; }
 
       const hasLocalData = (Array.isArray(records) && records.length > 0) ||
                            (Array.isArray(houses) && houses.length > 0);
-      if (hasLocalData && !confirm('导入将覆盖当前设备上的全部数据，确定继续吗？\n\n建议先导出一份当前数据再导入。')) {
-        e.target.value = '';
-        return;
+      if (hasLocalData && !confirm('导入将覆盖当前设备上的全部数据，确定继续吗？')) return;
+
+      try {
+        const result = applyImportedData(JSON.parse(raw));
+        closeModal('backupModal');
+        showToast('导入完成：' + result.records + ' 条流水 · ' + result.houses + ' 套房源');
+      } catch (e) {
+        showToast('内容格式错误，请确认粘贴完整');
       }
+    }
 
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        try {
-          const data = JSON.parse(ev.target.result);
-          if (!data || typeof data !== 'object') throw new Error('invalid');
-
-          if (Array.isArray(data.categories)) {
-            categories = data.categories.map(c => {
-              const def = defaultCategories.find(d => d.id === c.id);
-              return { ...c, type: c.type || (def ? def.type : 'expense') };
-            });
-          }
-          if (Array.isArray(data.records)) records = data.records;
-
-          // 房源与水电读数：旧版导出不含这些字段，缺失时保持现有数据不变
-          let importedHouses = 0;
-          if (Array.isArray(data.houses)) {
-            houses = data.houses.map(h => ({
-              ...h,
-              records: Array.isArray(h.records) ? h.records : [],
-              rentRecords: Array.isArray(h.rentRecords) ? h.rentRecords : []
-            }));
-            importedHouses = houses.length;
-          }
-          if (data.elecPrice !== undefined && data.elecPrice !== '') {
-            elecUnitPrice = parseFloat(data.elecPrice) || 0;
-          }
-          if (data.waterPrice !== undefined && data.waterPrice !== '') {
-            waterUnitPrice = parseFloat(data.waterPrice) || 0;
-          }
-          if (typeof data.currency === 'string' && data.currency) {
-            currentCurrency = data.currency;
-            localStorage.setItem('bt_currency', currentCurrency);
-          }
-
-          saveData();
-          saveHouseData();
-          updateCurrencyUI();
-          renderRecords();
-          updateStats();
-          renderCharts();
-          renderManageCats();
-          renderHouses();
-
-          showToast('导入完成：' + records.length + ' 条流水 · ' + importedHouses + ' 套房源');
-        } catch (err) {
-          showToast('文件格式错误');
-        }
-      };
-      reader.readAsText(file);
-      e.target.value = '';
+    document.getElementById('btnImportData').addEventListener('click', showImportBackup);
+    document.getElementById('btnCopyBackup').addEventListener('click', copyBackupText);
+    document.getElementById('btnDownloadBackup').addEventListener('click', downloadBackup);
+    document.getElementById('btnConfirmImport').addEventListener('click', confirmImportBackup);
+    document.getElementById('closeBackupModal').addEventListener('click', () => closeModal('backupModal'));
+    document.getElementById('backupModal').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('backupModal')) closeModal('backupModal');
     });
 
     // 清空数据
@@ -2818,7 +3017,7 @@
     document.querySelectorAll('.currency-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         currentCurrency = btn.dataset.currency;
-        localStorage.setItem('bt_currency', currentCurrency);
+        writeBoth('bt_currency', currentCurrency);
         updateCurrencyUI();
         updateStats();
         renderRecords();
@@ -3091,9 +3290,9 @@
     let waterUnitPrice = parseFloat(localStorage.getItem('bt_water_price')) || 0;
 
     function saveHouseData() {
-      localStorage.setItem('bt_houses', JSON.stringify(houses));
-      localStorage.setItem('bt_elec_price', elecUnitPrice.toString());
-      localStorage.setItem('bt_water_price', waterUnitPrice.toString());
+      writeBoth('bt_houses', JSON.stringify(houses));
+      writeBoth('bt_elec_price', elecUnitPrice.toString());
+      writeBoth('bt_water_price', waterUnitPrice.toString());
     }
 
     // 将房屋收支同步到记账本
@@ -3358,6 +3557,7 @@
                 </tbody>
               </table>
             </div>
+            <div class="table-scroll-hint">← 左右滑动查看完整表格 →</div>
 
             <!-- 水电录入 -->
             <div class="house-detail-input-row">
@@ -3766,6 +3966,16 @@
 
     function undoLastAction() {
       if (!lastUndo) { showToast('没有可撤回的操作'); return; }
+
+      // 撤回会删除记录，必须先确认
+      const undoParts = [];
+      if (lastUndo.removedRecord) undoParts.push('本次抄表记录');
+      if (lastUndo.removedRentRecord) undoParts.push('本次收租记录');
+      const undoDesc = undoParts.length ? undoParts.join('、') : '上次操作';
+      if (!confirm('确定撤回' + undoDesc + '吗？\n\n撤回后，该记录以及同步到记账本的收入都会被删除，且无法恢复。')) {
+        return;
+      }
+
       const { houseIdx, removedRecord, removedRentRecord, removedBillRecords } = lastUndo;
       if (removedRecord && houses[houseIdx]) {
         // 删除最后一次添加的水电记录
@@ -4337,6 +4547,7 @@
     });
 
     // ===================== 初始化 =====================
+    initDataLayer();
     renderRecords();
     updateStats();
     renderCharts();
