@@ -509,6 +509,8 @@
       max-width: 560px;
       max-height: 90vh;
       overflow-y: auto;
+      overscroll-behavior: contain;
+      -webkit-overflow-scrolling: touch;
       padding: 20px;
       transform: translateY(100%);
       transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
@@ -1316,10 +1318,11 @@
     .house-card-name span { font-size: 20px; }
     .house-card-actions {
       display: flex;
-      gap: 6px;
+      gap: 12px;
+      align-items: center;
     }
     .house-card-actions button {
-      width: 28px; height: 28px;
+      width: 32px; height: 32px;
       border-radius: 8px;
       border: 1.5px solid var(--rule);
       background: transparent;
@@ -1329,7 +1332,7 @@
       transition: all 0.2s ease;
     }
     .house-card-actions button:hover { border-color: var(--ink); color: var(--ink); }
-    .house-card-actions button svg { width: 14px; height: 14px; }
+    .house-card-actions button svg { width: 16px; height: 16px; }
     .house-card-actions .house-del-btn:hover { border-color: var(--danger); color: var(--danger); }
     .house-meter-grid {
       display: grid;
@@ -1504,6 +1507,354 @@
     }
     .house-empty-icon { font-size: 48px; margin-bottom: 12px; opacity: 0.4; }
 
+    /* ===== 房屋精简卡片 ===== */
+    .house-simple-card {
+      background: var(--bg2);
+      border: 1.5px solid var(--rule);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      margin-bottom: 10px;
+      transition: all 0.25s ease;
+    }
+    .house-simple-card:hover { box-shadow: var(--shadow); }
+    .house-simple-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .house-simple-name {
+      font-size: 16px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .house-simple-name span { font-size: 18px; }
+    .house-simple-info {
+      display: flex;
+      gap: 16px;
+      font-size: 12px;
+      color: var(--muted);
+      flex-wrap: wrap;
+    }
+    .house-simple-info-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .house-simple-info-item strong {
+      font-family: var(--font-mono);
+      color: var(--ink);
+      font-weight: 700;
+    }
+    .house-simple-rent {
+      font-family: var(--font-mono);
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--accent2);
+    }
+    .house-simple-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .house-simple-btn {
+      padding: 6px 12px;
+      border-radius: 8px;
+      border: 1.5px solid var(--rule);
+      background: transparent;
+      font-family: var(--font);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--ink);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      white-space: nowrap;
+    }
+    .house-simple-btn:hover { border-color: var(--ink); background: var(--ink); color: var(--bg2); }
+    .house-simple-btn svg { width: 14px; height: 14px; }
+    .house-simple-btn.detail-btn { border-color: var(--accent); color: var(--accent); }
+    .house-simple-btn.detail-btn:hover { background: var(--accent); color: var(--bg2); }
+    .house-simple-btn.danger-btn:hover { border-color: var(--danger); background: var(--danger); color: var(--bg2); }
+    .house-simple-btn.expand-btn { border-color: var(--accent2); color: var(--accent2); }
+    .house-simple-btn.expand-btn:hover { background: var(--accent2); color: var(--bg2); }
+
+    /* ===== 房屋详细表格 ===== */
+    .house-detail-section {
+      margin-bottom: 24px;
+    }
+    .house-detail-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .house-detail-title {
+      font-size: 17px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .house-detail-title span { font-size: 20px; }
+    .house-detail-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    /* 信息栏 */
+    .house-info-bar {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0;
+      background: var(--ink);
+      border-radius: 12px 12px 0 0;
+      overflow: hidden;
+    }
+    .house-info-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 8px 10px;
+      border-right: 1px solid rgba(255,255,255,0.15);
+    }
+    .house-info-item:last-child { border-right: none; }
+    .house-info-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.7);
+      white-space: nowrap;
+    }
+    .house-info-value {
+      font-size: 12px;
+      font-weight: 700;
+      color: #fff;
+      font-family: var(--font-mono);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    /* 表格 */
+    .house-table-wrap {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      border-radius: 0 0 12px 12px;
+      border: 1.5px solid var(--rule);
+      border-top: none;
+      background: var(--bg2);
+    }
+    .house-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11px;
+      min-width: 700px;
+    }
+    .house-table th, .house-table td {
+      border: 1px solid var(--rule);
+      padding: 6px 4px;
+      text-align: center;
+      white-space: nowrap;
+    }
+    .house-table th {
+      background: rgba(224,122,95,0.08);
+      color: var(--ink);
+      font-weight: 700;
+      font-size: 10px;
+      letter-spacing: 0.2px;
+      text-transform: uppercase;
+    }
+    .house-table th.water-group { background: rgba(69,123,157,0.06); }
+    .house-table th.elec-group { background: rgba(233,196,106,0.08); }
+    .house-table th.rent-col { background: rgba(129,178,154,0.08); }
+    .house-table th.total-col { background: rgba(224,122,95,0.1); }
+    .house-table td {
+      font-family: var(--font-mono);
+      color: var(--ink);
+      font-weight: 600;
+      font-size: 11px;
+    }
+    .house-table td.water-cost { color: #457b9d; }
+    .house-table td.elec-cost { color: #e9c46a; }
+    .house-table td.rent-cell { color: var(--accent2); font-weight: 700; }
+    .house-table td.total-cell { color: var(--accent); font-weight: 700; font-size: 12px; }
+    .house-table .action-cell {
+      width: 36px;
+      padding: 3px;
+    }
+    .house-table .del-btn-small {
+      width: 22px; height: 22px;
+      border: none;
+      border-radius: 6px;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      transition: all 0.2s;
+    }
+    .house-table .del-btn-small:hover { background: rgba(224,122,95,0.1); color: var(--danger); }
+
+    /* 横滑时固定第一列（时间），避免看不到对应日期 */
+    .house-table td:first-child {
+      position: sticky;
+      left: 0;
+      z-index: 2;
+      background: var(--bg2);
+      box-shadow: 1px 0 0 var(--rule);
+    }
+    .house-table th:first-child {
+      position: sticky;
+      left: 0;
+      z-index: 3;
+      background: #fdf1ec;
+      box-shadow: 1px 0 0 var(--rule);
+    }
+    .table-scroll-hint {
+      font-size: 11px;
+      color: var(--muted);
+      text-align: center;
+      padding: 8px 0 4px;
+    }
+
+    .house-detail-input-row {
+      display: flex;
+      gap: 8px;
+      align-items: flex-end;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+    .house-detail-input-group {
+      flex: 1;
+      min-width: 100px;
+    }
+    .house-detail-input-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+    .house-detail-back {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--muted);
+      cursor: pointer;
+      margin-bottom: 16px;
+      transition: color 0.2s;
+    }
+    .house-detail-back:hover { color: var(--ink); }
+    .house-detail-back svg { width: 18px; height: 18px; }
+
+    /* ===== 表格全屏查看 ===== */
+    .tz-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 300;
+      background: var(--bg);
+      display: none;
+      flex-direction: column;
+    }
+    .tz-overlay.show { display: flex; }
+    .tz-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 10px 12px;
+      background: var(--bg2);
+      border-bottom: 1.5px solid var(--rule);
+      flex-shrink: 0;
+    }
+    .tz-title {
+      flex: 1;
+      min-width: 0;
+      font-size: 14px;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .tz-controls {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      flex-shrink: 0;
+    }
+    .tz-btn {
+      height: 28px;
+      min-width: 28px;
+      padding: 0 7px;
+      border-radius: 8px;
+      border: 1.5px solid var(--rule);
+      background: transparent;
+      color: var(--ink);
+      font-family: var(--font);
+      font-size: 14px;
+      font-weight: 700;
+      line-height: 1;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .tz-btn:hover { border-color: var(--ink); background: var(--ink); color: var(--bg2); }
+    .tz-btn.tz-fit-btn { font-size: 11px; font-weight: 600; padding: 0 8px; }
+    .tz-level {
+      min-width: 40px;
+      text-align: center;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .tz-close {
+      width: 28px; height: 28px;
+      border-radius: 8px;
+      border: 1.5px solid var(--rule);
+      background: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .tz-close:hover { border-color: var(--ink); color: var(--ink); }
+    .tz-close svg { width: 14px; height: 14px; }
+    .tz-body {
+      flex: 1;
+      overflow: auto;
+      padding: 14px;
+      -webkit-overflow-scrolling: touch;
+    }
+    .tz-info {
+      margin-bottom: 10px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.15);
+    }
+    .tz-inner {
+      display: block;
+      width: max-content;
+      margin: 0 auto;
+    }
+    .tz-table {
+      min-width: 0;
+      border: 1.5px solid var(--rule);
+      border-radius: 8px;
+      background: var(--bg2);
+      font-size: 12px;
+    }
+    .tz-table th, .tz-table td { padding: 8px 7px; }
+    .tz-table th { font-size: 11px; }
+    .tz-table td { font-size: 12px; }
+    .tz-table td.total-cell { font-size: 13px; }
+
+
     /* ===== 响应式 ===== */
     @media (max-width: 400px) {
       .category-grid { grid-template-columns: repeat(3, 1fr); }
@@ -1512,6 +1863,7 @@
       .stat-value { font-size: 18px; }
     }
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 <body>
 
@@ -1526,6 +1878,9 @@
         <button class="icon-btn" id="btnManageCat" title="管理分类">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
         </button>
+        <button class="icon-btn" id="btnOpenSettings" title="设置与备份">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </button>
       </div>
     </div>
   </header>
@@ -1534,11 +1889,11 @@
     <!-- 首页 -->
     <section class="page-section active" id="pageHome">
       <div class="stats-grid">
-        <div class="stat-card income">
+        <div class="stat-card income" id="cardIncome" style="cursor:pointer;">
           <div class="stat-label">本月收入</div>
           <div class="stat-value income" id="totalIncome">¥0.00</div>
         </div>
-        <div class="stat-card expense">
+        <div class="stat-card expense" id="cardExpense" style="cursor:pointer;">
           <div class="stat-label">本月支出</div>
           <div class="stat-value expense" id="totalExpense">¥0.00</div>
         </div>
@@ -1650,6 +2005,24 @@
           <div class="empty-text">暂无房子，点击上方添加</div>
         </div>
       </div>
+    </section>
+
+    <!-- 房租详细页 -->
+    <section class="page-section" id="pageHouseDetail">
+      <div class="house-detail-back" id="btnBackToHouseList">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        返回房租列表
+      </div>
+      <div class="house-header">
+        <div class="house-header-title">房租明细</div>
+        <div style="display:flex;gap:8px;">
+          <button class="house-add-btn" id="btnUndoDetail" title="撤回上次操作" style="padding:8px 12px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></svg>
+            撤回
+          </button>
+        </div>
+      </div>
+      <div id="houseDetailList"></div>
     </section>
   </div>
 
@@ -1767,9 +2140,11 @@
       <div class="form-card" style="margin-top:0;border:none;padding:0;">
         <div class="form-row">
           <label class="form-label">数据管理</label>
-          <button class="submit-btn" id="btnExportData" style="margin-bottom:8px;background:var(--bg);color:var(--ink);border:1.5px solid var(--rule);">导出数据 (JSON)</button>
-          <button class="submit-btn" id="btnImportData" style="margin-bottom:8px;background:var(--bg);color:var(--ink);border:1.5px solid var(--rule);">导入数据</button>
-          <input type="file" id="importFile" accept=".json" style="display:none;">
+          <p style="font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:8px;">
+            备份包含：记账记录、分类、房源、水电读数、单价、货币设置。
+          </p>
+          <button class="submit-btn" id="btnExportData" style="margin-bottom:8px;background:var(--bg);color:var(--ink);border:1.5px solid var(--rule);">导出备份（复制或下载）</button>
+          <button class="submit-btn" id="btnImportData" style="margin-bottom:8px;background:var(--bg);color:var(--ink);border:1.5px solid var(--rule);">导入备份（粘贴内容）</button>
           <button class="submit-btn" id="btnClearData" style="background:var(--danger);color:#fff;">清空所有数据</button>
         </div>
         <div class="form-row">
@@ -1792,6 +2167,27 @@
     </div>
   </div>
 
+  <!-- 备份内容弹层：复制/粘贴方式，兼容不支持下载与文件选择的 WebView -->
+  <div class="modal-overlay" id="backupModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title" id="backupTitle">备份</div>
+        <button class="modal-close" id="closeBackupModal">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="form-card" style="margin-top:0;border:none;padding:0;">
+        <p id="backupHint" style="font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:8px;white-space:pre-line;"></p>
+        <textarea id="backupText" spellcheck="false" style="width:100%;height:170px;font-family:var(--font-mono);font-size:11px;line-height:1.5;padding:8px;border:1.5px solid var(--rule);border-radius:8px;background:var(--bg);color:var(--ink);resize:vertical;"></textarea>
+        <div style="margin-top:10px;">
+          <button class="submit-btn" id="btnCopyBackup" style="margin-bottom:8px;background:var(--bg);color:var(--ink);border:1.5px solid var(--rule);">复制全文</button>
+          <button class="submit-btn" id="btnDownloadBackup" style="margin-bottom:8px;background:var(--bg);color:var(--ink);border:1.5px solid var(--rule);">下载文件</button>
+          <button class="submit-btn" id="btnConfirmImport" style="display:none;">解析并导入</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- 添加房子模态框 -->
   <div class="modal-overlay" id="addHouseModal">
     <div class="modal-content">
@@ -1807,11 +2203,42 @@
           <input type="text" class="form-input" id="newHouseName" placeholder="例如：A栋301、滨江花园2单元501">
         </div>
         <div class="form-row">
+          <label class="form-label">户主姓名</label>
+          <input type="text" class="form-input" id="newHouseOwner" placeholder="例如：张三">
+        </div>
+        <div class="form-row">
+          <label class="form-label">户主联系方式</label>
+          <input type="text" class="form-input" id="newHousePhone" placeholder="例如：13812345678">
+        </div>
+        <div class="form-row">
           <label class="form-label">月租金（元）</label>
           <input type="number" class="form-input" id="newHouseRent" placeholder="0.00" step="0.01" min="0">
         </div>
         <div class="form-row">
+          <label class="form-label">押金（元）</label>
+          <input type="number" class="form-input" id="newHouseDeposit" placeholder="0.00" step="0.01" min="0">
+        </div>
+        <div class="form-row">
           <button class="submit-btn" id="btnSubmitHouse">添加房子</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 删除确认模态框 -->
+  <div class="modal-overlay" id="deleteConfirmModal">
+    <div class="modal-content" style="max-width:360px;">
+      <div class="modal-header">
+        <div class="modal-title">确认删除</div>
+        <button class="modal-close" id="closeDeleteConfirmModal">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div style="padding:20px 0;">
+        <p id="deleteConfirmText" style="font-size:15px;color:var(--ink);line-height:1.6;margin-bottom:20px;"></p>
+        <div style="display:flex;gap:10px;">
+          <button class="submit-btn" id="btnCancelDelete" style="flex:1;background:var(--bg);color:var(--ink);border:1.5px solid var(--rule);">取消</button>
+          <button class="submit-btn" id="btnConfirmDelete" style="flex:1;background:var(--danger);">确定删除</button>
         </div>
       </div>
     </div>
@@ -1858,6 +2285,23 @@
     </div>
   </div>
 
+  <!-- 表格全屏查看 -->
+  <div class="tz-overlay" id="tzOverlay">
+    <div class="tz-bar">
+      <div class="tz-title" id="tzTitle">房屋明细</div>
+      <div class="tz-controls">
+        <button type="button" class="tz-btn" id="tzOut" title="缩小">−</button>
+        <div class="tz-level" id="tzLevel">100%</div>
+        <button type="button" class="tz-btn" id="tzIn" title="放大">+</button>
+        <button type="button" class="tz-btn tz-fit-btn" id="tzFit" title="适应屏幕宽度">适应宽度</button>
+        <button type="button" class="tz-close" id="tzClose" title="关闭">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="tz-body" id="tzBody"></div>
+  </div>
+
   <!-- Toast -->
   <div class="toast" id="toast"></div>
 
@@ -1902,10 +2346,92 @@
     let statsYear = new Date().getFullYear();
     let statsMonth = new Date().getMonth();
 
+    // ===================== 数据层（M1 步骤 1：IndexedDB 双写） =====================
+    // 当前阶段：localStorage 仍是唯一读写路径，IndexedDB 作为第二份副本并行写入。
+    // 页面行为与改造前完全一致，出问题可直接回退到上一提交。
+    const IDB_NAME = 'billtracker';
+    const IDB_VERSION = 1;
+    const IDB_STORE = 'kv';
+    const SYNC_KEYS = ['bt_records', 'bt_categories', 'bt_houses', 'bt_elec_price', 'bt_water_price', 'bt_currency'];
+    let idb = null;
+
+    function openIDB() {
+      return new Promise((resolve, reject) => {
+        if (!window.indexedDB) { reject(new Error('IndexedDB 不可用')); return; }
+        const req = indexedDB.open(IDB_NAME, IDB_VERSION);
+        req.onupgradeneeded = (e) => {
+          const db = e.target.result;
+          if (!db.objectStoreNames.contains(IDB_STORE)) db.createObjectStore(IDB_STORE);
+        };
+        req.onsuccess = (e) => resolve(e.target.result);
+        req.onerror = (e) => reject(e.target.error);
+      });
+    }
+
+    function idbSet(key, value) {
+      if (!idb) return;
+      try {
+        const tx = idb.transaction(IDB_STORE, 'readwrite');
+        tx.objectStore(IDB_STORE).put(value, key);
+      } catch (e) {
+        console.warn('[数据层] IndexedDB 写入失败：' + key, e);
+      }
+    }
+
+    function idbGetAll() {
+      return new Promise((resolve) => {
+        if (!idb) { resolve({}); return; }
+        const out = {};
+        try {
+          const tx = idb.transaction(IDB_STORE, 'readonly');
+          const req = tx.objectStore(IDB_STORE).openCursor();
+          req.onsuccess = (e) => {
+            const cursor = e.target.result;
+            if (cursor) { out[cursor.key] = cursor.value; cursor.continue(); }
+            else resolve(out);
+          };
+          req.onerror = () => resolve(out);
+        } catch (e) { resolve(out); }
+      });
+    }
+
+    // 双写：localStorage 与 IndexedDB 同时写入
+    function writeBoth(key, value) {
+      localStorage.setItem(key, value);
+      idbSet(key, value);
+    }
+
+    async function initDataLayer() {
+      try {
+        idb = await openIDB();
+
+        // 请求持久化存储，降低浏览器因空间不足自动清理的概率
+        if (navigator.storage && navigator.storage.persist) {
+          const granted = await navigator.storage.persist().catch(() => false);
+          console.log('[数据层] 持久化存储：' + (granted ? '已授予' : '未授予'));
+        }
+
+        // 首次迁移：IndexedDB 为空时，把 localStorage 现有数据复制过去（不删除原数据）
+        const existing = await idbGetAll();
+        if (Object.keys(existing).length === 0) {
+          let count = 0;
+          SYNC_KEYS.forEach(k => {
+            const raw = localStorage.getItem(k);
+            if (raw !== null) { idbSet(k, raw); count++; }
+          });
+          console.log('[数据层] 已从 localStorage 复制 ' + count + ' 项到 IndexedDB');
+        } else {
+          console.log('[数据层] IndexedDB 已有 ' + Object.keys(existing).length + ' 项，跳过迁移');
+        }
+      } catch (e) {
+        console.warn('[数据层] IndexedDB 初始化失败，继续使用 localStorage', e);
+      }
+    }
+
     // ===================== 工具函数 =====================
     function saveData() {
-      localStorage.setItem('bt_categories', JSON.stringify(categories));
-      localStorage.setItem('bt_records', JSON.stringify(records));
+      writeBoth('bt_categories', JSON.stringify(categories));
+      writeBoth('bt_records', JSON.stringify(records));
     }
 
     function formatMoney(n) {
@@ -1984,7 +2510,6 @@
         const dayLabel = (homeDate.getMonth()+1) + '月' + homeDate.getDate() + '日 周' + weekDays[homeDate.getDay()];
         list.innerHTML = `
           <div class="empty-state">
-            <div class="empty-icon">📅</div>
             <div class="empty-text">${dayLabel} 暂无记录</div>
           </div>`;
         return;
@@ -2026,6 +2551,12 @@
         btn.addEventListener('click', (e) => {
           e.stopPropagation();
           const id = btn.dataset.id;
+          const rec = records.find(r => r.id === id);
+          if (!rec) return;
+          const cat = categories.find(c => c.id === rec.category) || { name: '未分类' };
+          const amountStr = (rec.type === 'income' ? '+' : '-') + formatMoney(rec.amount);
+          const noteStr = rec.note || cat.name;
+          if (!confirm('确定删除这条记录吗？\n\n' + noteStr + '  ' + amountStr + '\n' + (rec.date || ''))) return;
           records = records.filter(r => r.id !== id);
           saveData();
           renderRecords();
@@ -2222,6 +2753,31 @@
       document.body.style.overflow = '';
     }
 
+    // 阻止模态框内的下拉刷新
+    function preventPullRefresh(element) {
+      let startY = 0;
+      element.addEventListener('touchstart', function(e) {
+        startY = e.touches[0].pageY;
+      }, { passive: true });
+      element.addEventListener('touchmove', function(e) {
+        const y = e.touches[0].pageY;
+        const scrollTop = element.scrollTop;
+        const scrollHeight = element.scrollHeight;
+        const clientHeight = element.clientHeight;
+        const isAtTop = scrollTop <= 0;
+        const isAtBottom = scrollTop + clientHeight >= scrollHeight;
+        const isPullingDown = y > startY;
+        const isPullingUp = y < startY;
+        // 在顶部向下滑动 或 在底部向上滑动时阻止
+        if ((isAtTop && isPullingDown) || (isAtBottom && isPullingUp)) {
+          e.preventDefault();
+        }
+      }, { passive: false });
+    }
+
+    // 应用到所有模态框内容区域
+    document.querySelectorAll('.modal-content').forEach(preventPullRefresh);
+
     document.getElementById('btnAdd').addEventListener('click', () => {
       currentType = 'expense';
       currentCategory = null;
@@ -2255,51 +2811,186 @@
       setTimeout(() => openModal('settingsModal'), 300);
     });
     document.getElementById('closeSettingsModal').addEventListener('click', () => closeModal('settingsModal'));
+    document.getElementById('btnOpenSettings').addEventListener('click', () => openModal('settingsModal'));
     document.getElementById('settingsModal').addEventListener('click', (e) => {
       if (e.target === document.getElementById('settingsModal')) closeModal('settingsModal');
     });
 
-    // 导出数据
-    document.getElementById('btnExportData').addEventListener('click', () => {
-      const data = { categories, records, exportDate: new Date().toISOString() };
-      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = '记账本备份_' + new Date().toLocaleDateString() + '.json';
-      a.click();
-      URL.revokeObjectURL(url);
-      showToast('数据已导出');
-    });
-
-    // 导入数据
-    document.getElementById('btnImportData').addEventListener('click', () => {
-      document.getElementById('importFile').click();
-    });
-    document.getElementById('importFile').addEventListener('change', (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = (ev) => {
+    // ===================== 备份：导出 =====================
+    function buildBackupData() {
+      const readJSON = (key, fallback) => {
         try {
-          const data = JSON.parse(ev.target.result);
-          if (data.categories) categories = data.categories.map(c => {
-            const def = defaultCategories.find(d => d.id === c.id);
-            return { ...c, type: c.type || (def ? def.type : 'expense') };
-          });
-          if (data.records) records = data.records;
-          saveData();
-          renderRecords();
-          updateStats();
-          renderCharts();
-          renderManageCats();
-          showToast('数据导入成功');
-        } catch (err) {
-          showToast('文件格式错误');
+          const raw = localStorage.getItem(key);
+          return raw == null ? fallback : JSON.parse(raw);
+        } catch (e) {
+          return fallback;
         }
       };
-      reader.readAsText(file);
-      e.target.value = '';
+      return {
+        exportVersion: 2,
+        exportDate: new Date().toISOString(),
+        categories: readJSON('bt_categories', []),
+        records: readJSON('bt_records', []),
+        houses: readJSON('bt_houses', []),
+        elecPrice: localStorage.getItem('bt_elec_price') || '',
+        waterPrice: localStorage.getItem('bt_water_price') || '',
+        currency: localStorage.getItem('bt_currency') || '¥'
+      };
+    }
+
+    let backupJSON = '';
+
+    function showExportBackup() {
+      const data = buildBackupData();
+      // 不缩进，减小体积；导入时由程序解析，无需可读格式
+      backupJSON = JSON.stringify(data);
+
+      const houseCount = Array.isArray(data.houses) ? data.houses.length : 0;
+      const recordCount = Array.isArray(data.records) ? data.records.length : 0;
+
+      document.getElementById('backupTitle').textContent = '导出备份';
+      document.getElementById('backupHint').textContent =
+        '共 ' + recordCount + ' 条流水、' + houseCount + ' 套房源，约 ' + backupJSON.length + ' 字符。\n' +
+        '点「复制全文」后，粘贴到手机备忘录或笔记应用保存（不要直接发微信，消息长度有限），再通过备忘录分享到网盘或电脑。\n' +
+        '若「下载文件」没有生成文件，说明当前环境不支持下载，用复制即可。';
+
+      const ta = document.getElementById('backupText');
+      ta.value = backupJSON;
+      ta.readOnly = true;
+
+      document.getElementById('btnCopyBackup').style.display = '';
+      document.getElementById('btnDownloadBackup').style.display = '';
+      document.getElementById('btnConfirmImport').style.display = 'none';
+      openModal('backupModal');
+    }
+
+    function copyBackupText() {
+      const ta = document.getElementById('backupText');
+      const text = ta.value;
+      let ok = false;
+      try {
+        ta.readOnly = false;
+        ta.select();
+        ta.setSelectionRange(0, text.length);
+        ok = document.execCommand('copy');
+      } catch (e) {
+        ok = false;
+      }
+      ta.readOnly = true;
+
+      if (ok) { showToast('已复制，请粘贴保存'); return; }
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text)
+          .then(() => showToast('已复制，请粘贴保存'))
+          .catch(() => showToast('复制失败，请长按文本框手动选择'));
+      } else {
+        showToast('复制失败，请长按文本框手动选择');
+      }
+    }
+
+    function downloadBackup() {
+      try {
+        const blob = new Blob([backupJSON], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = '记账本完整备份_' + new Date().toISOString().slice(0, 10) + '.json';
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+        showToast('已尝试下载；若没有文件，请改用「复制全文」');
+      } catch (e) {
+        showToast('下载失败，请改用「复制全文」');
+      }
+    }
+
+    document.getElementById('btnExportData').addEventListener('click', showExportBackup);
+
+    // ===================== 备份：导入 =====================
+    function showImportBackup() {
+      document.getElementById('backupTitle').textContent = '导入备份';
+      document.getElementById('backupHint').textContent =
+        '把之前复制的备份内容整段粘贴到下面，再点「解析并导入」。\n' +
+        '导入会覆盖本机现有数据，建议先导出一份当前数据。';
+
+      const ta = document.getElementById('backupText');
+      ta.value = '';
+      ta.readOnly = false;
+
+      document.getElementById('btnCopyBackup').style.display = 'none';
+      document.getElementById('btnDownloadBackup').style.display = 'none';
+      document.getElementById('btnConfirmImport').style.display = '';
+      openModal('backupModal');
+    }
+
+    function applyImportedData(data) {
+      if (!data || typeof data !== 'object') throw new Error('invalid');
+
+      if (Array.isArray(data.categories)) {
+        categories = data.categories.map(c => {
+          const def = defaultCategories.find(d => d.id === c.id);
+          return { ...c, type: c.type || (def ? def.type : 'expense') };
+        });
+      }
+      if (Array.isArray(data.records)) records = data.records;
+
+      // 房源与水电读数：旧版导出不含这些字段，缺失时保持现有数据不变
+      let importedHouses = 0;
+      if (Array.isArray(data.houses)) {
+        houses = data.houses.map(h => ({
+          ...h,
+          records: Array.isArray(h.records) ? h.records : [],
+          rentRecords: Array.isArray(h.rentRecords) ? h.rentRecords : []
+        }));
+        importedHouses = houses.length;
+      }
+      if (data.elecPrice !== undefined && data.elecPrice !== '') {
+        elecUnitPrice = parseFloat(data.elecPrice) || 0;
+      }
+      if (data.waterPrice !== undefined && data.waterPrice !== '') {
+        waterUnitPrice = parseFloat(data.waterPrice) || 0;
+      }
+      if (typeof data.currency === 'string' && data.currency) {
+        currentCurrency = data.currency;
+        writeBoth('bt_currency', currentCurrency);
+      }
+
+      saveData();
+      saveHouseData();
+      updateCurrencyUI();
+      renderRecords();
+      updateStats();
+      renderCharts();
+      renderManageCats();
+      renderHouses();
+
+      return { records: records.length, houses: importedHouses };
+    }
+
+    function confirmImportBackup() {
+      const raw = document.getElementById('backupText').value.trim();
+      if (!raw) { showToast('请先粘贴备份内容'); return; }
+
+      const hasLocalData = (Array.isArray(records) && records.length > 0) ||
+                           (Array.isArray(houses) && houses.length > 0);
+      if (hasLocalData && !confirm('导入将覆盖当前设备上的全部数据，确定继续吗？')) return;
+
+      try {
+        const result = applyImportedData(JSON.parse(raw));
+        closeModal('backupModal');
+        showToast('导入完成：' + result.records + ' 条流水 · ' + result.houses + ' 套房源');
+      } catch (e) {
+        showToast('内容格式错误，请确认粘贴完整');
+      }
+    }
+
+    document.getElementById('btnImportData').addEventListener('click', showImportBackup);
+    document.getElementById('btnCopyBackup').addEventListener('click', copyBackupText);
+    document.getElementById('btnDownloadBackup').addEventListener('click', downloadBackup);
+    document.getElementById('btnConfirmImport').addEventListener('click', confirmImportBackup);
+    document.getElementById('closeBackupModal').addEventListener('click', () => closeModal('backupModal'));
+    document.getElementById('backupModal').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('backupModal')) closeModal('backupModal');
     });
 
     // 清空数据
@@ -2326,7 +3017,7 @@
     document.querySelectorAll('.currency-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         currentCurrency = btn.dataset.currency;
-        localStorage.setItem('bt_currency', currentCurrency);
+        writeBoth('bt_currency', currentCurrency);
         updateCurrencyUI();
         updateStats();
         renderRecords();
@@ -2454,14 +3145,20 @@
     });
     document.getElementById('btnPrevDay').addEventListener('click', () => {
       homeDate.setDate(homeDate.getDate() - 1);
+      calYear = homeDate.getFullYear();
+      calMonth = homeDate.getMonth();
       renderRecords();
     });
     document.getElementById('btnNextDay').addEventListener('click', () => {
       homeDate.setDate(homeDate.getDate() + 1);
+      calYear = homeDate.getFullYear();
+      calMonth = homeDate.getMonth();
       renderRecords();
     });
     document.getElementById('btnToday').addEventListener('click', () => {
       homeDate = new Date();
+      calYear = homeDate.getFullYear();
+      calMonth = homeDate.getMonth();
       renderRecords();
     });
 
@@ -2535,6 +3232,28 @@
       });
     });
 
+    // 首页统计卡片点击跳转
+    document.getElementById('cardIncome').addEventListener('click', () => {
+      statsType = 'income';
+      document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+      document.querySelector('.nav-item[data-page="stats"]').classList.add('active');
+      document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
+      document.getElementById('pageStats').classList.add('active');
+      document.querySelectorAll('.stats-type-btn').forEach(b => b.classList.remove('active'));
+      document.querySelector('.stats-type-btn[data-stats-type="income"]').classList.add('active');
+      renderCharts();
+    });
+    document.getElementById('cardExpense').addEventListener('click', () => {
+      statsType = 'expense';
+      document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+      document.querySelector('.nav-item[data-page="stats"]').classList.add('active');
+      document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
+      document.getElementById('pageStats').classList.add('active');
+      document.querySelectorAll('.stats-type-btn').forEach(b => b.classList.remove('active'));
+      document.querySelector('.stats-type-btn[data-stats-type="expense"]').classList.add('active');
+      renderCharts();
+    });
+
     // ===================== 统计页事件 =====================
     // 统计类型切换
     document.querySelectorAll('.stats-type-btn').forEach(btn => {
@@ -2571,13 +3290,15 @@
     let waterUnitPrice = parseFloat(localStorage.getItem('bt_water_price')) || 0;
 
     function saveHouseData() {
-      localStorage.setItem('bt_houses', JSON.stringify(houses));
-      localStorage.setItem('bt_elec_price', elecUnitPrice.toString());
-      localStorage.setItem('bt_water_price', waterUnitPrice.toString());
+      writeBoth('bt_houses', JSON.stringify(houses));
+      writeBoth('bt_elec_price', elecUnitPrice.toString());
+      writeBoth('bt_water_price', waterUnitPrice.toString());
     }
 
     // 将房屋收支同步到记账本
     function syncHouseToRecords(houseName, catId, amount, monthStr, note) {
+      const now = new Date();
+      const todayStr = now.getFullYear() + '-' + (now.getMonth() + 1).toString().padStart(2, '0') + '-' + now.getDate().toString().padStart(2, '0') + ' ' + now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
       // 查找当月是否已有该房子该分类的记录
       const existIdx = records.findIndex(r =>
         r.type === 'income' &&
@@ -2586,14 +3307,14 @@
       );
       if (existIdx >= 0) {
         records[existIdx].amount = amount;
-        records[existIdx].date = monthStr + '-15 12:00';
+        records[existIdx].date = todayStr;
       } else {
         records.push({
           id: 'rec_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
           type: 'income',
           category: catId,
           amount: amount,
-          date: monthStr + '-15 12:00',
+          date: todayStr,
           note: note
         });
       }
@@ -2601,6 +3322,58 @@
       renderRecords();
       updateStats();
       renderCharts();
+    }
+
+    // 重新同步某房子某月的所有水电费收入记录
+    function rebuildHouseUtilityRecords(houseIdx, monthStr) {
+      const house = houses[houseIdx];
+      if (!house || !house.records) return;
+      const houseName = house.name;
+      // 先清除该房子当月所有水电费收入记录
+      records = records.filter(r =>
+        !(r.type === 'income' &&
+          (r.category === 'elec_income' || r.category === 'water_income') &&
+          r.note.startsWith(houseName + ' 电费') &&
+          r.date.startsWith(monthStr))
+      );
+      records = records.filter(r =>
+        !(r.type === 'income' &&
+          (r.category === 'elec_income' || r.category === 'water_income') &&
+          r.note.startsWith(houseName + ' 水费') &&
+          r.date.startsWith(monthStr))
+      );
+      // 重新计算当月每条记录产生的水电费
+      const recs = house.records;
+      for (let i = 1; i < recs.length; i++) {
+        if (!recs[i].date.startsWith(monthStr)) continue;
+        const prev = recs[i - 1];
+        const cur = recs[i];
+        const usedElec = Math.max(0, cur.elec - prev.elec);
+        const usedWater = Math.max(0, cur.water - prev.water);
+        const elecCost = usedElec * elecUnitPrice;
+        const waterCost = usedWater * waterUnitPrice;
+        if (elecCost > 0) {
+          records.push({
+            id: 'rec_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6) + '_' + i + 'e',
+            type: 'income',
+            category: 'elec_income',
+            amount: elecCost,
+            date: cur.date + ' 00:00',
+            note: houseName + ' 电费(' + Number(usedElec).toFixed(1) + '度)'
+          });
+        }
+        if (waterCost > 0) {
+          records.push({
+            id: 'rec_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6) + '_' + i + 'w',
+            type: 'income',
+            category: 'water_income',
+            amount: waterCost,
+            date: cur.date + ' 00:00',
+            note: houseName + ' 水费(' + Number(usedWater).toFixed(1) + 'm³)'
+          });
+        }
+      }
+      saveData();
     }
 
     function renderHouses() {
@@ -2617,40 +3390,18 @@
       list.innerHTML = houses.map((house, idx) => {
         const records = house.records || [];
         const rent = house.rent || 0;
+        const deposit = house.deposit || 0;
         const rentRecords = house.rentRecords || [];
         const latest = records.length ? records[records.length - 1] : null;
         const prev = records.length > 1 ? records[records.length - 2] : null;
         const curElec = latest ? latest.elec : 0;
         const curWater = latest ? latest.water : 0;
         const isFirst = records.length === 1;
-        // 首次录入不计算用量；后续：显示与上次的差值
         const usedElec = latest ? (prev ? Math.max(0, curElec - prev.elec) : 0) : 0;
         const usedWater = latest ? (prev ? Math.max(0, curWater - prev.water) : 0) : 0;
         const elecCost = usedElec * elecUnitPrice;
         const waterCost = usedWater * waterUnitPrice;
         const utilityCost = elecCost + waterCost;
-
-        const rentHistoryHtml = rentRecords.slice(-6).reverse().map(r => `
-          <div class="history-row">
-            <div class="history-month">${r.month}</div>
-            <div class="history-usage"><span>💰租金</span><span>${r.paid ? '✅已收' : '⏳待收'}</span></div>
-            <div class="history-cost">${formatMoney(r.amount)}</div>
-          </div>
-        `).join('');
-
-        const historyHtml = records.slice(-6).reverse().map((r, ri) => {
-          const p = ri < records.length - 1 ? records[records.length - 2 - ri] : null;
-          const uE = p ? Math.max(0, r.elec - p.elec) : r.elec;
-          const uW = p ? Math.max(0, r.water - p.water) : r.water;
-          const cost = uE * elecUnitPrice + uW * waterUnitPrice;
-          return `
-            <div class="history-row">
-              <div class="history-month">${r.date}</div>
-              <div class="history-usage"><span>⚡${Number(r.elec).toFixed(1)}度</span><span>💧${Number(r.water).toFixed(1)}m³</span></div>
-              <div class="history-cost">${p ? '用量 ' + Number(uE).toFixed(1) + '度/' + Number(uW).toFixed(1) + 'm³' : '首次录入'}</div>
-            </div>
-          `;
-        }).join('');
 
         const now = new Date();
         const curMonthStr = now.getFullYear() + '-' + (now.getMonth() + 1).toString().padStart(2, '0');
@@ -2658,59 +3409,256 @@
         const rentPaid = curRentRec ? curRentRec.paid : false;
 
         return `
-          <div class="house-card">
-            <div class="house-card-header">
-              <div class="house-card-name"><span>🏠</span>${house.name}</div>
-              <div class="house-card-actions">
-                <button class="house-summary-btn" data-idx="${idx}" title="月总结" style="width:auto;padding:0 10px;font-size:11px;font-weight:600;font-family:var(--font);border-radius:8px;border:1.5px solid var(--rule);background:transparent;cursor:pointer;color:var(--ink);transition:all 0.2s ease;">
-                  📊 月总结
-                </button>
-                <button class="house-edit-btn" data-idx="${idx}" title="编辑">
+          <div class="house-simple-card">
+            <div class="house-simple-top">
+              <div class="house-simple-name"><span>🏠</span>${house.name}</div>
+              <div class="house-simple-rent">${formatMoney(rent)}/月</div>
+            </div>
+            <div class="house-simple-info">
+              ${house.owner ? `<div class="house-simple-info-item">户主 <strong>${house.owner}</strong></div>` : ''}
+              ${house.phone ? `<div class="house-simple-info-item">📱 <strong>${house.phone}</strong></div>` : ''}
+              ${deposit ? `<div class="house-simple-info-item">押金 <strong>${formatMoney(deposit)}</strong></div>` : ''}
+              ${!isFirst && utilityCost > 0 ? `<div class="house-simple-info-item">水电 <strong>${formatMoney(utilityCost)}</strong></div>` : ''}
+              <div class="house-simple-info-item">${rentPaid ? '✅ 已收租' : '⏳ 待收租'}</div>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:10px;">
+              <button type="button" class="house-simple-btn detail-btn" data-idx="${idx}" title="查看明细">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                明细
+              </button>
+              <button type="button" class="house-simple-btn" data-idx="${idx}" data-action="toggle-rent-simple" style="${rentPaid ? 'border-color:var(--accent2);color:var(--accent2);' : ''}">
+                ${rentPaid ? '✅ 已收租' : '💰 收租'}
+              </button>
+              <button type="button" class="house-simple-btn house-summary-btn" data-idx="${idx}" title="月总结">
+                📊 月总结
+              </button>
+              <button type="button" class="house-simple-btn house-edit-btn" data-idx="${idx}" title="编辑">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              </button>
+              <button type="button" class="house-simple-btn danger-btn house-del-btn" data-idx="${idx}" title="删除">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // ===================== 房租详细页 =====================
+    function renderHouseDetail() {
+      const list = document.getElementById('houseDetailList');
+      if (!list) return;
+
+      if (!houses.length) {
+        list.innerHTML = '<div class="house-empty"><div class="house-empty-icon">&#127968;</div><div class="empty-text">暂无房子，请返回添加</div></div>';
+        return;
+      }
+
+      list.innerHTML = houses.map((house, idx) => {
+        const records = house.records || [];
+        const rent = house.rent || 0;
+        const deposit = house.deposit || 0;
+        const rentRecords = house.rentRecords || [];
+        const latest = records.length ? records[records.length - 1] : null;
+        const prev = records.length > 1 ? records[records.length - 2] : null;
+        const curElec = latest ? latest.elec : 0;
+        const curWater = latest ? latest.water : 0;
+        const isFirst = records.length === 1;
+        const usedElec = latest ? (prev ? Math.max(0, curElec - prev.elec) : 0) : 0;
+        const usedWater = latest ? (prev ? Math.max(0, curWater - prev.water) : 0) : 0;
+        const elecCost = usedElec * elecUnitPrice;
+        const waterCost = usedWater * waterUnitPrice;
+        const utilityCost = elecCost + waterCost;
+        const totalCost = rent + utilityCost;
+        const recordDate = latest ? latest.date : '—';
+
+        const now = new Date();
+        const curMonthStr = now.getFullYear() + '-' + (now.getMonth() + 1).toString().padStart(2, '0');
+        const curRentRec = rentRecords.find(r => r.month === curMonthStr);
+        const rentPaid = curRentRec ? curRentRec.paid : false;
+
+        return `
+          <div class="house-detail-section">
+            <div class="house-detail-header">
+              <div class="house-detail-title"><span>🏠</span>${house.name}</div>
+              <div class="house-detail-actions">
+                <button type="button" class="house-simple-btn expand-btn house-expand-btn" data-idx="${idx}" title="全屏查看">⤢ 全屏</button>
+                <button type="button" class="house-simple-btn house-summary-btn" data-idx="${idx}" title="月总结">📊 月总结</button>
+                <button type="button" class="house-simple-btn house-edit-btn" data-idx="${idx}" title="编辑">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                 </button>
-                <button class="house-del-btn" data-idx="${idx}" title="删除">
+                <button type="button" class="house-simple-btn danger-btn house-del-btn" data-idx="${idx}" title="删除">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                 </button>
               </div>
             </div>
-            <div class="house-meter-grid">
-              <div class="meter-card">
-                <div class="meter-card-title">⚡ ${isFirst ? '当前电表读数' : '本月用电'}</div>
-                <div class="meter-card-value elec-color">${isFirst ? Number(curElec).toFixed(1) + '度' : Number(usedElec).toFixed(1) + '度'}</div>
-                <div class="meter-card-cost">${isFirst ? '下次录入后计算用量' : (elecCost ? '费用 ' + formatMoney(elecCost) : '未设置单价')}</div>
+
+            <!-- 信息栏 -->
+            <div class="house-info-bar">
+              <div class="house-info-item">
+                <span class="house-info-label">房号</span>
+                <span class="house-info-value">${house.name}</span>
               </div>
-              <div class="meter-card">
-                <div class="meter-card-title">💧 ${isFirst ? '当前水表读数' : '本月用水'}</div>
-                <div class="meter-card-value water-color">${isFirst ? Number(curWater).toFixed(1) + 'm³' : Number(usedWater).toFixed(1) + 'm³'}</div>
-                <div class="meter-card-cost">${isFirst ? '下次录入后计算用量' : (waterCost ? '费用 ' + formatMoney(waterCost) : '未设置单价')}</div>
+              <div class="house-info-item">
+                <span class="house-info-label">住户</span>
+                <span class="house-info-value">${house.owner || '—'}</span>
+              </div>
+              <div class="house-info-item">
+                <span class="house-info-label">手机号</span>
+                <span class="house-info-value">${house.phone || '—'}</span>
+              </div>
+              <div class="house-info-item">
+                <span class="house-info-label">押金</span>
+                <span class="house-info-value">${deposit ? formatMoney(deposit) : '—'}</span>
               </div>
             </div>
-            <div class="meter-input-row">
-              <div class="meter-input-group">
-                <div class="meter-input-label">电表读数(度)</div>
+
+            <!-- 费用主表格 — 9列 -->
+            <div class="house-table-wrap">
+              <table class="house-table">
+                <thead>
+                  <tr>
+                    <th>时间</th>
+                    <th class="water-group">本月水表</th>
+                    <th class="water-group">本月用度</th>
+                    <th class="water-group">本月费用</th>
+                    <th class="elec-group">本月电表</th>
+                    <th class="elec-group">本月用量</th>
+                    <th class="elec-group">本月费用</th>
+                    <th class="rent-col">月租</th>
+                    <th class="total-col">当月总费</th>
+                    <th>操作</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${records.length > 0 ? records.slice().reverse().map((r, ri) => {
+                    const actualIdx = records.length - 1 - ri;
+                    const p = actualIdx > 0 ? records[actualIdx - 1] : null;
+                    const uE = p ? Math.max(0, r.elec - p.elec) : 0;
+                    const uW = p ? Math.max(0, r.water - p.water) : 0;
+                    const eCost = p ? uE * elecUnitPrice : 0;
+                    const wCost = p ? uW * waterUnitPrice : 0;
+                    const rowTotal = p ? (eCost + wCost + rent) : rent;
+                    return `
+                      <tr>
+                        <td>${r.date}</td>
+                        <td>${Number(r.water).toFixed(1)}m³</td>
+                        <td>${p ? Number(uW).toFixed(1) + 'm³' : '—'}</td>
+                        <td class="water-cost">${p ? formatMoney(wCost) : '—'}</td>
+                        <td>${Number(r.elec).toFixed(1)}度</td>
+                        <td>${p ? Number(uE).toFixed(1) + '度' : '—'}</td>
+                        <td class="elec-cost">${p ? formatMoney(eCost) : '—'}</td>
+                        <td class="rent-cell">${formatMoney(rent)}</td>
+                        <td class="total-cell">${formatMoney(rowTotal)}</td>
+                        <td class="action-cell"><button type="button" class="del-btn-small del-meter-btn" data-house-idx="${idx}" data-rec-idx="${actualIdx}" title="删除">✕</button></td>
+                      </tr>
+                    `;
+                  }).join('') : `<tr><td colspan="10" style="color:var(--muted);font-family:var(--font);font-weight:400;padding:16px;">暂无水电记录，请在下方录入</td></tr>`}
+                </tbody>
+              </table>
+            </div>
+            <div class="table-scroll-hint">← 左右滑动查看完整表格 →</div>
+
+            <!-- 水电录入 -->
+            <div class="house-detail-input-row">
+              <div class="house-detail-input-group">
+                <div class="house-detail-input-label">电表读数(度)</div>
                 <input type="number" class="meter-input" id="elec_${idx}" value="${curElec}" step="0.1" min="0" placeholder="0">
               </div>
-              <div class="meter-input-group">
-                <div class="meter-input-label">水表读数(m³)</div>
+              <div class="house-detail-input-group">
+                <div class="house-detail-input-label">水表读数(m³)</div>
                 <input type="number" class="meter-input" id="water_${idx}" value="${curWater}" step="0.1" min="0" placeholder="0">
               </div>
-              <button class="meter-save-btn" data-idx="${idx}">记录</button>
+              <button type="button" class="meter-save-btn" data-idx="${idx}">记录</button>
             </div>
-            <div style="margin-top:12px;padding-top:12px;border-top:1.5px solid var(--rule);">
-              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-                <div style="font-size:13px;font-weight:700;color:var(--ink);">💰 租金管理</div>
-                <div style="display:flex;align-items:center;gap:8px;">
-                  <span style="font-family:var(--font-mono);font-size:14px;font-weight:700;color:var(--accent2);">${formatMoney(rent)}/月</span>
-                  <button class="meter-save-btn" data-idx="${idx}" data-action="toggle-rent" style="background:${rentPaid ? 'var(--accent2)' : 'var(--ink)'};font-size:11px;">${rentPaid ? '已收租' : '标记收租'}</button>
-                </div>
-              </div>
-              ${utilityCost > 0 ? `<div style="font-size:12px;color:var(--muted);margin-bottom:8px;">本月水电费 ${formatMoney(utilityCost)}，应收合计 <strong style="color:var(--ink);">${formatMoney(rent + utilityCost)}</strong></div>` : ''}
-              ${rentRecords.length > 0 ? `<div class="house-history"><div class="house-history-title">租金记录</div>${rentHistoryHtml}</div>` : ''}
+
+            <!-- 收租按钮 -->
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-top:10px;padding:8px 12px;background:var(--bg);border-radius:8px;">
+              <div style="font-size:12px;color:var(--muted);">月租 <strong style="color:var(--accent2);font-family:var(--font-mono);">${formatMoney(rent)}</strong> ${utilityCost > 0 ? '+ 水电 <strong style="color:var(--accent);font-family:var(--font-mono);">' + formatMoney(utilityCost) + '</strong> = <strong style="color:var(--ink);font-family:var(--font-mono);">' + formatMoney(totalCost) + '</strong>' : ''}</div>
+              <button type="button" class="meter-save-btn" data-idx="${idx}" data-action="toggle-rent" style="background:${rentPaid ? 'var(--accent2)' : 'var(--ink)'};font-size:11px;">${rentPaid ? '✅ 已收租' : '💰 标记收租'}</button>
             </div>
-            ${records.length > 0 ? `<div class="house-history"><div class="house-history-title">水电记录</div>${historyHtml}</div>` : ''}
           </div>
         `;
       }).join('');
+    }
+
+    // ===================== 表格全屏查看 =====================
+    let tzZoom = 1;
+    let tzBaseWidth = 0;
+
+    function openTableZoom(idx) {
+      const house = houses[idx];
+      if (!house) return;
+      const section = document.querySelectorAll('#houseDetailList .house-detail-section')[idx];
+      const srcTable = section ? section.querySelector('.house-table') : null;
+      if (!srcTable) return;
+
+      // 克隆表格并去掉“操作”列（只做查看用）
+      const table = srcTable.cloneNode(true);
+      table.classList.add('tz-table');
+      const headCells = table.querySelectorAll('thead tr th');
+      const colCount = headCells.length;
+      if (colCount > 1) headCells[colCount - 1].remove();
+      table.querySelectorAll('tbody tr').forEach(tr => {
+        const cells = tr.querySelectorAll('td');
+        if (cells.length === colCount) {
+          cells[cells.length - 1].remove();
+        } else if (cells.length === 1 && cells[0].hasAttribute('colspan')) {
+          cells[0].setAttribute('colspan', String(colCount - 1));
+        }
+      });
+
+      const body = document.getElementById('tzBody');
+      body.innerHTML = '';
+      const inner = document.createElement('div');
+      inner.className = 'tz-inner';
+      const infoBar = section.querySelector('.house-info-bar');
+      if (infoBar) {
+        const info = infoBar.cloneNode(true);
+        info.classList.add('tz-info');
+        inner.appendChild(info);
+      }
+      inner.appendChild(table);
+      body.appendChild(inner);
+
+      document.getElementById('tzTitle').textContent = '🏠 ' + house.name;
+      document.getElementById('tzOverlay').classList.add('show');
+      document.body.style.overflow = 'hidden';
+
+      // 以 100% 量出表格原始宽度，作为缩放基准
+      inner.style.zoom = 1;
+      tzBaseWidth = inner.getBoundingClientRect().width || 0;
+      fitTableZoom();
+    }
+
+    function fitTableZoom() {
+      const body = document.getElementById('tzBody');
+      const inner = body ? body.querySelector('.tz-inner') : null;
+      if (!inner) return;
+      const base = tzBaseWidth || inner.getBoundingClientRect().width;
+      if (!base) return;
+      const avail = body.clientWidth - 28; // 减去左右内边距
+      tzZoom = Math.max(0.5, Math.min(1.4, avail / base));
+      applyTableZoom();
+    }
+
+    function applyTableZoom() {
+      const body = document.getElementById('tzBody');
+      const inner = body ? body.querySelector('.tz-inner') : null;
+      if (!inner) return;
+      inner.style.zoom = tzZoom;
+      document.getElementById('tzLevel').textContent = Math.round(tzZoom * 100) + '%';
+    }
+
+    function stepTableZoom(delta) {
+      tzZoom = Math.max(0.4, Math.min(2.5, Math.round((tzZoom + delta) * 10) / 10));
+      applyTableZoom();
+    }
+
+    function closeTableZoom() {
+      document.getElementById('tzOverlay').classList.remove('show');
+      document.body.style.overflow = '';
+      document.getElementById('tzBody').innerHTML = '';
     }
 
     // ===================== 月总结 =====================
@@ -2835,7 +3783,154 @@
         </div>
       `;
 
+      // 导出按钮
+      html += `
+        <div style="margin-top:16px;padding-top:16px;border-top:1.5px solid var(--rule);">
+          <button type="button" class="submit-btn" id="btnExportSummaryExcel" style="background:var(--accent2);font-size:13px;padding:12px;">
+            📥 导出 Excel
+          </button>
+        </div>
+      `;
+
       document.getElementById('summaryContent').innerHTML = html;
+
+      // 绑定导出事件
+      document.getElementById('btnExportSummaryExcel').addEventListener('click', () => {
+        exportSummaryExcel(house, monthPrefix, rentAmount, rentPaid, monthRecs, elecUsed, waterUsed, elecCost, waterCost, utilityTotal, grandTotal);
+      });
+    }
+
+    function exportSummaryExcel(house, monthPrefix, rentAmount, rentPaid, monthRecs, elecUsed, waterUsed, elecCost, waterCost, utilityTotal, grandTotal) {
+      const deposit = house.deposit || 0;
+      const rent = house.rent || 0;
+
+      let html = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel">';
+      html += '<head><meta charset="utf-8"><title>' + house.name + ' 月总结</title>';
+      html += '<!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>费用汇总</x:Name></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]-->';
+      html += '<style>';
+      html += 'td,th{border:1px solid #999;padding:6px 8px;text-align:center;font-size:12px;font-family:微软雅黑,sans-serif;}';
+      html += 'th{background:#f5f0eb;color:#2d2a26;font-weight:bold;}';
+      html += '</style>';
+      html += '</head><body>';
+
+      // 全部放一个表格里，避免多表格+标题导致Excel合并单元格
+      html += '<table border="1">';
+
+      // 标题行
+      html += '<tr><td colspan="9" style="background:#2d2a26;color:#fff;font-size:14px;font-weight:bold;">' + house.name + ' 月总结 (' + monthPrefix + ')</td></tr>';
+
+      // 信息行 — 8个单元格 + 补1个凑9列
+      html += '<tr>';
+      html += '<td style="background:#e8e0d8;font-weight:bold;">房号</td><td>' + house.name + '</td>';
+      html += '<td style="background:#e8e0d8;font-weight:bold;">住户</td><td>' + (house.owner || '—') + '</td>';
+      html += '<td style="background:#e8e0d8;font-weight:bold;">手机号</td><td>' + (house.phone || '—') + '</td>';
+      html += '<td style="background:#e8e0d8;font-weight:bold;">押金</td><td>' + (deposit ? deposit.toFixed(2) : '—') + '</td>';
+      html += '<td style="background:#e8e0d8;">' + (rentPaid ? '已收租' : '待收租') + '</td>';
+      html += '</tr>';
+
+      // 空行分隔
+      html += '<tr><td colspan="9" style="background:#f5f0eb;font-size:2px;">&nbsp;</td></tr>';
+
+      // 表头行
+      html += '<tr>';
+      html += '<th>时间</th>';
+      html += '<th>本月水表</th>';
+      html += '<th>本月用度</th>';
+      html += '<th>本月费用</th>';
+      html += '<th>本月电表</th>';
+      html += '<th>本月用量</th>';
+      html += '<th>本月费用</th>';
+      html += '<th>月租</th>';
+      html += '<th>当月总费</th>';
+      html += '</tr>';
+
+      // 数据行
+      if (monthRecs.length > 0) {
+        monthRecs.forEach((r, i) => {
+          const p = i > 0 ? monthRecs[i - 1] : null;
+          const uE = p ? Math.max(0, r.elec - p.elec) : 0;
+          const uW = p ? Math.max(0, r.water - p.water) : 0;
+          const eCost = p ? uE * elecUnitPrice : 0;
+          const wCost = p ? uW * waterUnitPrice : 0;
+          const rowTotal = p ? (eCost + wCost + rent) : rent;
+          html += '<tr>';
+          html += '<td>' + r.date + '</td>';
+          html += '<td>' + Number(r.water).toFixed(1) + ' m³</td>';
+          html += '<td>' + (p ? Number(uW).toFixed(1) + ' m³' : '—') + '</td>';
+          html += '<td>' + (p ? wCost.toFixed(2) : '—') + '</td>';
+          html += '<td>' + Number(r.elec).toFixed(1) + ' 度</td>';
+          html += '<td>' + (p ? Number(uE).toFixed(1) + ' 度' : '—') + '</td>';
+          html += '<td>' + (p ? eCost.toFixed(2) : '—') + '</td>';
+          html += '<td>' + rent.toFixed(2) + '</td>';
+          html += '<td style="font-weight:bold;color:#e07a5f;">' + rowTotal.toFixed(2) + '</td>';
+          html += '</tr>';
+        });
+      } else {
+        html += '<tr><td colspan="9" style="color:#999;">暂无水电记录</td></tr>';
+      }
+
+      // 合计行
+      html += '<tr>';
+      html += '<td colspan="8" style="font-weight:bold;background:#fce8e0;">应收合计</td>';
+      html += '<td style="font-weight:bold;background:#fce8e0;color:#e07a5f;font-size:14px;">' + grandTotal.toFixed(2) + ' 元</td>';
+      html += '</tr>';
+
+      html += '</table>';
+      html += '</body></html>';
+      openDocPage(html, house.name + '_月总结_' + monthPrefix + '.xls');
+    }
+
+    function openDocPage(html, filename) {
+      // 使用 Blob URL 直接下载，避免弹窗拦截
+      try {
+        const blob = new Blob(['\ufeff' + html], { type: 'application/vnd.ms-excel;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        a.style.display = 'none';
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => {
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        }, 200);
+        showToast('已下载 ' + filename);
+      } catch (err) {
+        // 降级：使用 data URI
+        try {
+          const dataUri = 'data:application/vnd.ms-excel;charset=utf-8,' + encodeURIComponent('\ufeff' + html);
+          const a = document.createElement('a');
+          a.href = dataUri;
+          a.download = filename;
+          a.style.display = 'none';
+          document.body.appendChild(a);
+          a.click();
+          setTimeout(() => { document.body.removeChild(a); }, 200);
+          showToast('已下载 ' + filename);
+        } catch (e2) {
+          showToast('下载失败，请长按页面保存');
+        }
+      }
+    }
+
+    function copyText(text) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => showToast('已复制，可粘贴到微信/QQ/备忘录')).catch(() => fallbackCopy(text));
+      } else {
+        fallbackCopy(text);
+      }
+    }
+
+    function fallbackCopy(text) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.cssText = 'position:fixed;left:-9999px;top:-9999px;';
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); showToast('已复制，可粘贴到微信/QQ/备忘录'); }
+      catch(e) { showToast('复制失败'); }
+      document.body.removeChild(ta);
     }
 
     document.getElementById('summaryCloseBtn').addEventListener('click', closeSummary);
@@ -2853,11 +3948,34 @@
       renderSummary();
     });
 
+    // 全屏表格控件
+    document.getElementById('tzClose').addEventListener('click', closeTableZoom);
+    document.getElementById('tzIn').addEventListener('click', () => stepTableZoom(0.1));
+    document.getElementById('tzOut').addEventListener('click', () => stepTableZoom(-0.1));
+    document.getElementById('tzFit').addEventListener('click', fitTableZoom);
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && document.getElementById('tzOverlay').classList.contains('show')) closeTableZoom();
+    });
+    window.addEventListener('resize', () => {
+      if (document.getElementById('tzOverlay').classList.contains('show')) fitTableZoom();
+    });
+
     // ===================== 撤回功能 =====================
     let lastUndo = null; // { houseIdx, removedRecord, removedRentRecord, removedBillRecords }
+    let pendingDeleteIdx = -1; // 待删除的房子索引
 
     function undoLastAction() {
       if (!lastUndo) { showToast('没有可撤回的操作'); return; }
+
+      // 撤回会删除记录，必须先确认
+      const undoParts = [];
+      if (lastUndo.removedRecord) undoParts.push('本次抄表记录');
+      if (lastUndo.removedRentRecord) undoParts.push('本次收租记录');
+      const undoDesc = undoParts.length ? undoParts.join('、') : '上次操作';
+      if (!confirm('确定撤回' + undoDesc + '吗？\n\n撤回后，该记录以及同步到记账本的收入都会被删除，且无法恢复。')) {
+        return;
+      }
+
       const { houseIdx, removedRecord, removedRentRecord, removedBillRecords } = lastUndo;
       if (removedRecord && houses[houseIdx]) {
         // 删除最后一次添加的水电记录
@@ -2880,6 +3998,7 @@
       saveHouseData();
       saveData();
       renderHouses();
+      renderHouseDetail();
       renderRecords();
       updateStats();
       renderCharts();
@@ -2889,7 +4008,57 @@
     document.getElementById('houseList').addEventListener('click', function(e) {
       const list = this;
       // 兼容 SVG 点击：从 button 或 svg/path 向上查找
+
+      // 详情按钮
       let target = e.target;
+      while (target && target !== list && !target.classList.contains('detail-btn')) {
+        target = target.parentElement;
+      }
+      const detailBtn = target && target.classList.contains('detail-btn') ? target : null;
+      if (detailBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        const idx = parseInt(detailBtn.dataset.idx);
+        if (isNaN(idx) || idx < 0 || idx >= houses.length) return;
+        // 跳转到详细页
+        document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
+        document.getElementById('pageHouseDetail').classList.add('active');
+        renderHouseDetail();
+        return;
+      }
+
+      // 精简页收租按钮
+      target = e.target;
+      while (target && target !== list && !target.classList.contains('house-simple-btn')) {
+        target = target.parentElement;
+      }
+      const simpleBtn = target && target.classList.contains('house-simple-btn') && target.dataset.action === 'toggle-rent-simple' ? target : null;
+      if (simpleBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        const idx = parseInt(simpleBtn.dataset.idx);
+        if (isNaN(idx) || idx < 0 || idx >= houses.length) return;
+        const now = new Date();
+        const monthStr = now.getFullYear() + '-' + (now.getMonth() + 1).toString().padStart(2, '0');
+        if (!houses[idx].rentRecords) houses[idx].rentRecords = [];
+        const existIdx = houses[idx].rentRecords.findIndex(r => r.month === monthStr);
+        if (existIdx >= 0) {
+          houses[idx].rentRecords[existIdx].paid = !houses[idx].rentRecords[existIdx].paid;
+        } else {
+          houses[idx].rentRecords.push({ month: monthStr, amount: houses[idx].rent || 0, paid: true });
+        }
+        const isPaid = houses[idx].rentRecords.find(r => r.month === monthStr).paid;
+        if (isPaid) {
+          syncHouseToRecords(houses[idx].name, 'rent_income', houses[idx].rent || 0, monthStr, houses[idx].name + ' 租金');
+        }
+        saveHouseData();
+        renderHouses();
+        showToast(isPaid ? '已标记收租，已同步到记账本' : '已取消收租');
+        return;
+      }
+
+      // 删除房子按钮
+      target = e.target;
       while (target && target !== list && !target.classList.contains('house-del-btn')) {
         target = target.parentElement;
       }
@@ -2900,10 +4069,54 @@
         const idx = parseInt(delBtn.dataset.idx);
         if (isNaN(idx) || idx < 0 || idx >= houses.length) return;
         const houseName = houses[idx].name;
-        houses.splice(idx, 1);
-        try { saveHouseData(); } catch (e) {}
+        pendingDeleteIdx = idx;
+        document.getElementById('deleteConfirmText').textContent = '确定要删除「' + houseName + '」吗？删除后将同时清除该房子的所有水电记录和收租记录。';
+        openModal('deleteConfirmModal');
+        return;
+      }
+
+      // 删除水电记录按钮
+      target = e.target;
+      while (target && target !== list && !target.classList.contains('del-meter-btn')) {
+        target = target.parentElement;
+      }
+      const delMeterBtn = target && target.classList.contains('del-meter-btn') ? target : null;
+      if (delMeterBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        const houseIdx = parseInt(delMeterBtn.dataset.houseIdx);
+        const recIdx = parseInt(delMeterBtn.dataset.recIdx);
+        if (isNaN(houseIdx) || isNaN(recIdx)) return;
+        if (!houses[houseIdx] || !houses[houseIdx].records) return;
+        if (recIdx < 0 || recIdx >= houses[houseIdx].records.length) return;
+        const rec = houses[houseIdx].records[recIdx];
+        if (!confirm('确定删除 ' + rec.date + ' 的水电记录吗？\n删除后电表/水表读数将回到该记录之前的状态。')) return;
+
+        const monthStr = rec.date.slice(0, 7);
+        // 删除该记录
+        houses[houseIdx].records.splice(recIdx, 1);
+        // 重新同步当月水电费收入记录
+        rebuildHouseUtilityRecords(houseIdx, monthStr);
+        // 更新输入框显示
+        if (houses[houseIdx].records.length === 0) {
+          const elecInput = document.getElementById('elec_' + houseIdx);
+          const waterInput = document.getElementById('water_' + houseIdx);
+          if (elecInput) elecInput.value = '0';
+          if (waterInput) waterInput.value = '0';
+        } else {
+          const prevRec = houses[houseIdx].records[houses[houseIdx].records.length - 1];
+          const elecInput = document.getElementById('elec_' + houseIdx);
+          const waterInput = document.getElementById('water_' + houseIdx);
+          if (elecInput) elecInput.value = prevRec.elec;
+          if (waterInput) waterInput.value = prevRec.water;
+        }
+        saveHouseData();
         renderHouses();
-        showToast('已删除 ' + houseName);
+        renderHouseDetail();
+        renderRecords();
+        updateStats();
+        renderCharts();
+        showToast('已删除 ' + rec.date + ' 的水电记录');
         return;
       }
 
@@ -2934,7 +4147,10 @@
         const idx = parseInt(editBtn.dataset.idx);
         if (isNaN(idx) || idx < 0 || idx >= houses.length) return;
         document.getElementById('newHouseName').value = houses[idx].name;
+        document.getElementById('newHouseOwner').value = houses[idx].owner || '';
+        document.getElementById('newHousePhone').value = houses[idx].phone || '';
         document.getElementById('newHouseRent').value = houses[idx].rent || '';
+        document.getElementById('newHouseDeposit').value = houses[idx].deposit || '';
         document.getElementById('btnSubmitHouse').dataset.editIdx = idx;
         openModal('addHouseModal');
         return;
@@ -2967,6 +4183,7 @@
         }
         saveHouseData();
         renderHouses();
+        renderHouseDetail();
         showToast(isPaid ? '已标记收租，已同步到记账本' : '已取消收租');
       } else {
         const elecInput = document.getElementById('elec_' + idx);
@@ -3027,6 +4244,7 @@
 
         saveHouseData();
         renderHouses();
+        renderHouseDetail();
         showToast(isFirstRecord ? '首次读数已记录' : '读数已记录，已同步到记账本');
       }
     });
@@ -3036,42 +4254,80 @@
       elecUnitPrice = parseFloat(e.target.value) || 0;
       saveHouseData();
       renderHouses();
+      renderHouseDetail();
       showToast('电费单价已更新');
     });
     document.getElementById('waterPrice').addEventListener('change', (e) => {
       waterUnitPrice = parseFloat(e.target.value) || 0;
       saveHouseData();
       renderHouses();
+      renderHouseDetail();
       showToast('水费单价已更新');
     });
 
     // 添加/编辑房子模态框
     document.getElementById('btnAddHouse').addEventListener('click', () => {
       document.getElementById('newHouseName').value = '';
+      document.getElementById('newHouseOwner').value = '';
+      document.getElementById('newHousePhone').value = '';
       document.getElementById('newHouseRent').value = '';
+      document.getElementById('newHouseDeposit').value = '';
       document.getElementById('btnSubmitHouse').dataset.editIdx = '';
       openModal('addHouseModal');
     });
     document.getElementById('btnUndo').addEventListener('click', undoLastAction);
+    document.getElementById('btnUndoDetail').addEventListener('click', undoLastAction);
     document.getElementById('closeAddHouseModal').addEventListener('click', () => closeModal('addHouseModal'));
     document.getElementById('addHouseModal').addEventListener('click', (e) => {
       if (e.target === document.getElementById('addHouseModal')) closeModal('addHouseModal');
     });
+
+    // 删除确认模态框事件
+    document.getElementById('closeDeleteConfirmModal').addEventListener('click', () => closeModal('deleteConfirmModal'));
+    document.getElementById('deleteConfirmModal').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('deleteConfirmModal')) closeModal('deleteConfirmModal');
+    });
+    document.getElementById('btnCancelDelete').addEventListener('click', () => {
+      pendingDeleteIdx = -1;
+      closeModal('deleteConfirmModal');
+    });
+    document.getElementById('btnConfirmDelete').addEventListener('click', () => {
+      if (pendingDeleteIdx >= 0 && pendingDeleteIdx < houses.length) {
+        const houseName = houses[pendingDeleteIdx].name;
+        // 删除房子，但保留已同步到记账本的记录（records中的记录）
+        // 房子的水电读数记录（houses[idx].records）和收租记录（houses[idx].rentRecords）随房子一起删除
+        // 但已同步到主记账本（bt_records）的收入记录保留
+        houses.splice(pendingDeleteIdx, 1);
+        try { saveHouseData(); } catch (e) {}
+        renderHouses();
+        renderHouseDetail();
+        showToast('已删除 ' + houseName + '，记账记录已保留');
+      }
+      pendingDeleteIdx = -1;
+      closeModal('deleteConfirmModal');
+    });
     document.getElementById('btnSubmitHouse').addEventListener('click', () => {
       const name = document.getElementById('newHouseName').value.trim();
+      const owner = document.getElementById('newHouseOwner').value.trim();
+      const phone = document.getElementById('newHousePhone').value.trim();
       const rent = parseFloat(document.getElementById('newHouseRent').value) || 0;
+      const deposit = parseFloat(document.getElementById('newHouseDeposit').value) || 0;
       if (!name) { showToast('请输入房子名称'); return; }
       const editIdx = document.getElementById('btnSubmitHouse').dataset.editIdx;
       if (editIdx !== '' && editIdx !== undefined) {
         houses[parseInt(editIdx)].name = name;
+        houses[parseInt(editIdx)].owner = owner;
+        houses[parseInt(editIdx)].phone = phone;
         houses[parseInt(editIdx)].rent = rent;
+        houses[parseInt(editIdx)].deposit = deposit;
         showToast('房子已更新');
       } else {
-        houses.push({ id: 'house_' + Date.now(), name, rent, records: [], rentRecords: [] });
+        houses.push({ id: 'house_' + Date.now(), name, owner, phone, rent, deposit, records: [], rentRecords: [] });
         showToast('房子已添加');
       }
       saveHouseData();
       renderHouses();
+      renderHouseDetail();
       closeModal('addHouseModal');
     });
 
@@ -3083,11 +4339,221 @@
       });
     });
 
+    // 返回房租列表
+    document.getElementById('btnBackToHouseList').addEventListener('click', () => {
+      document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
+      document.getElementById('pageHouse').classList.add('active');
+      renderHouses();
+    });
+
+    // 详细页事件委托（与列表页共用逻辑）
+    document.getElementById('houseDetailList').addEventListener('click', function(e) {
+      const list = this;
+
+      // 全屏查看按钮
+      let target = e.target;
+      while (target && target !== list && !target.classList.contains('house-expand-btn')) {
+        target = target.parentElement;
+      }
+      const expandBtn = target && target.classList.contains('house-expand-btn') ? target : null;
+      if (expandBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        const idx = parseInt(expandBtn.dataset.idx);
+        if (isNaN(idx) || idx < 0 || idx >= houses.length) return;
+        openTableZoom(idx);
+        return;
+      }
+
+      // 删除房子按钮
+      target = e.target;
+      while (target && target !== list && !target.classList.contains('house-del-btn')) {
+        target = target.parentElement;
+      }
+      const delBtn = target && target.classList.contains('house-del-btn') ? target : null;
+      if (delBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        const idx = parseInt(delBtn.dataset.idx);
+        if (isNaN(idx) || idx < 0 || idx >= houses.length) return;
+        const houseName = houses[idx].name;
+        pendingDeleteIdx = idx;
+        document.getElementById('deleteConfirmText').textContent = '确定要删除「' + houseName + '」吗？删除后将同时清除该房子的所有水电记录和收租记录。';
+        openModal('deleteConfirmModal');
+        return;
+      }
+
+      // 删除水电记录按钮
+      target = e.target;
+      while (target && target !== list && !target.classList.contains('del-meter-btn')) {
+        target = target.parentElement;
+      }
+      const delMeterBtn = target && target.classList.contains('del-meter-btn') ? target : null;
+      if (delMeterBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        const houseIdx = parseInt(delMeterBtn.dataset.houseIdx);
+        const recIdx = parseInt(delMeterBtn.dataset.recIdx);
+        if (isNaN(houseIdx) || isNaN(recIdx)) return;
+        if (!houses[houseIdx] || !houses[houseIdx].records) return;
+        if (recIdx < 0 || recIdx >= houses[houseIdx].records.length) return;
+        const rec = houses[houseIdx].records[recIdx];
+        if (!confirm('确定删除 ' + rec.date + ' 的水电记录吗？\n删除后电表/水表读数将回到该记录之前的状态。')) return;
+        const monthStr = rec.date.slice(0, 7);
+        houses[houseIdx].records.splice(recIdx, 1);
+        // 重新同步当月水电费收入记录
+        rebuildHouseUtilityRecords(houseIdx, monthStr);
+        if (houses[houseIdx].records.length === 0) {
+          const elecInput = document.getElementById('elec_' + houseIdx);
+          const waterInput = document.getElementById('water_' + houseIdx);
+          if (elecInput) elecInput.value = '0';
+          if (waterInput) waterInput.value = '0';
+        } else {
+          const prevRec = houses[houseIdx].records[houses[houseIdx].records.length - 1];
+          const elecInput = document.getElementById('elec_' + houseIdx);
+          const waterInput = document.getElementById('water_' + houseIdx);
+          if (elecInput) elecInput.value = prevRec.elec;
+          if (waterInput) waterInput.value = prevRec.water;
+        }
+        saveHouseData();
+        renderHouseDetail();
+        renderHouses();
+        renderRecords();
+        updateStats();
+        renderCharts();
+        showToast('已删除 ' + rec.date + ' 的水电记录');
+        return;
+      }
+
+      // 月总结按钮
+      target = e.target;
+      while (target && target !== list && !target.classList.contains('house-summary-btn')) {
+        target = target.parentElement;
+      }
+      const summaryBtn = target && target.classList.contains('house-summary-btn') ? target : null;
+      if (summaryBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        const idx = parseInt(summaryBtn.dataset.idx);
+        if (isNaN(idx) || idx < 0 || idx >= houses.length) return;
+        openSummary(idx);
+        return;
+      }
+
+      // 编辑按钮
+      target = e.target;
+      while (target && target !== list && !target.classList.contains('house-edit-btn')) {
+        target = target.parentElement;
+      }
+      const editBtn = target && target.classList.contains('house-edit-btn') ? target : null;
+      if (editBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        const idx = parseInt(editBtn.dataset.idx);
+        if (isNaN(idx) || idx < 0 || idx >= houses.length) return;
+        document.getElementById('newHouseName').value = houses[idx].name;
+        document.getElementById('newHouseOwner').value = houses[idx].owner || '';
+        document.getElementById('newHousePhone').value = houses[idx].phone || '';
+        document.getElementById('newHouseRent').value = houses[idx].rent || '';
+        document.getElementById('newHouseDeposit').value = houses[idx].deposit || '';
+        document.getElementById('btnSubmitHouse').dataset.editIdx = idx;
+        openModal('addHouseModal');
+        return;
+      }
+
+      // 保存按钮（记录读数 / 收租）
+      target = e.target;
+      while (target && target !== list && !target.classList.contains('meter-save-btn')) {
+        target = target.parentElement;
+      }
+      const saveBtn = target && target.classList.contains('meter-save-btn') ? target : null;
+      if (!saveBtn) return;
+
+      const idx = parseInt(saveBtn.dataset.idx);
+      const action = saveBtn.dataset.action;
+
+      if (action === 'toggle-rent') {
+        const now = new Date();
+        const monthStr = now.getFullYear() + '-' + (now.getMonth() + 1).toString().padStart(2, '0');
+        if (!houses[idx].rentRecords) houses[idx].rentRecords = [];
+        const existIdx = houses[idx].rentRecords.findIndex(r => r.month === monthStr);
+        if (existIdx >= 0) {
+          houses[idx].rentRecords[existIdx].paid = !houses[idx].rentRecords[existIdx].paid;
+        } else {
+          houses[idx].rentRecords.push({ month: monthStr, amount: houses[idx].rent || 0, paid: true });
+        }
+        const isPaid = houses[idx].rentRecords.find(r => r.month === monthStr).paid;
+        if (isPaid) {
+          syncHouseToRecords(houses[idx].name, 'rent_income', houses[idx].rent || 0, monthStr, houses[idx].name + ' 租金');
+        }
+        saveHouseData();
+        renderHouseDetail();
+        renderHouses();
+        showToast(isPaid ? '已标记收租，已同步到记账本' : '已取消收租');
+      } else {
+        const elecInput = document.getElementById('elec_' + idx);
+        const waterInput = document.getElementById('water_' + idx);
+        const elecVal = elecInput.value !== '' ? parseFloat(elecInput.value) : null;
+        const waterVal = waterInput.value !== '' ? parseFloat(waterInput.value) : null;
+        const now = new Date();
+        const dateStr = now.toISOString().slice(0, 10);
+        const monthStr = now.getFullYear() + '-' + (now.getMonth() + 1).toString().padStart(2, '0');
+        if (!houses[idx].records) houses[idx].records = [];
+
+        const lastRec = houses[idx].records.length > 0 ? houses[idx].records[houses[idx].records.length - 1] : null;
+        const finalElec = elecVal !== null ? elecVal : (lastRec ? lastRec.elec : 0);
+        const finalWater = waterVal !== null ? waterVal : (lastRec ? lastRec.water : 0);
+
+        if (lastRec && lastRec.elec === finalElec && lastRec.water === finalWater) {
+          showToast('读数无变化，未记录');
+          return;
+        }
+
+        const oldBillRecords = [...records];
+        houses[idx].records.push({ date: dateStr, elec: finalElec, water: finalWater });
+        houses[idx].records.sort((a, b) => a.date.localeCompare(b.date));
+
+        const recs = houses[idx].records;
+        const isFirstRecord = recs.length === 1;
+        let newBillIds = [];
+        if (!isFirstRecord) {
+          const latest = recs[recs.length - 1];
+          const prev = recs[recs.length - 2];
+          const usedElec = Math.max(0, latest.elec - prev.elec);
+          const usedWater = Math.max(0, latest.water - prev.water);
+          const elecCost = usedElec * elecUnitPrice;
+          const waterCost = usedWater * waterUnitPrice;
+          if (elecCost > 0) {
+            syncHouseToRecords(houses[idx].name, 'elec_income', elecCost, monthStr, houses[idx].name + ' 电费(' + Number(usedElec).toFixed(1) + '度)');
+          }
+          if (waterCost > 0) {
+            syncHouseToRecords(houses[idx].name, 'water_income', waterCost, monthStr, houses[idx].name + ' 水费(' + Number(usedWater).toFixed(1) + 'm³)');
+          }
+          newBillIds = records.slice(oldBillRecords.length).map(r => r.id);
+        }
+
+        lastUndo = {
+          houseIdx: idx,
+          removedRecord: { date: dateStr, elec: finalElec, water: finalWater },
+          removedRentRecord: null,
+          removedBillRecords: newBillIds
+        };
+
+        saveHouseData();
+        renderHouseDetail();
+        renderHouses();
+        showToast(isFirstRecord ? '首次读数已记录' : '读数已记录，已同步到记账本');
+      }
+    });
+
     // ===================== 初始化 =====================
+    initDataLayer();
     renderRecords();
     updateStats();
     renderCharts();
     renderIconPicker();
+    renderHouses();
+    renderHouseDetail();
   </script>
 </body>
 </html>
